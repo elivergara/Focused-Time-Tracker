@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Check-in Detail · MIT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Check-in {{ checkin.date }}</h2>
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
+  </div>
+
+  {% if checkin.notes %}
+    <div class="alert alert-light border">{{ checkin.notes }}</div>
+  {% endif %}
+
+  <div class="row g-3">
+    {% for mit in checkin.mits.all %}
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ mit.get_category_display }}</h5>
+            <p class="mb-2">{{ mit.title }}</p>
+            <p class="mb-1"><strong>Planned:</strong> {{ mit.planned_minutes }}m</p>
+            <p class="mb-1"><strong>Actual:</strong> {% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</p>
+            <span class="badge text-bg-secondary">{{ mit.get_status_display }}</span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

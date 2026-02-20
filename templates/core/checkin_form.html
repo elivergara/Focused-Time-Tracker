@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}New Check-in · MIT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h2 class="mb-3">Daily MIT Check-in</h2>
+      <p class="text-muted">Enter exactly 3 MITs: Bible, Guitar, and Work/Skill.</p>
+
+      <form method="post" class="card shadow-sm p-4">
+        {% csrf_token %}
+
+        {% if form.errors or formset.non_form_errors %}
+          <div class="alert alert-danger">
+            {{ form.errors }}
+            {{ formset.non_form_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">Date</label>
+            {{ form.date }}
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Notes</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        {{ formset.management_form }}
+        {% for mit_form in formset %}
+          <div class="border rounded p-3 mb-3">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Category</label>
+                {{ mit_form.category }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Task</label>
+                {{ mit_form.title }}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Planned min</label>
+                {{ mit_form.planned_minutes }}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Actual min</label>
+                {{ mit_form.actual_minutes }}
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">Status</label>
+                {{ mit_form.status }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Check-in</button>
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
