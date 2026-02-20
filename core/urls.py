@@ -6,5 +6,6 @@ urlpatterns = [
     path("checkins/new/", views.checkin_create, name="checkin_create"),
     path("checkins/<int:pk>/", views.checkin_detail, name="checkin_detail"),
     path("checkins/<int:pk>/edit/", views.checkin_edit, name="checkin_edit"),
+    path("skills/", views.skill_manage, name="skill_manage"),
     path("summary/monthly/", views.monthly_summary, name="monthly_summary"),
 ]

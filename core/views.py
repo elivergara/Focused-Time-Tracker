@@ -1,13 +1,15 @@
+import csv
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from django.contrib import messages
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import DailyCheckinForm, MITSessionFormSet
-from .models import DailyCheckin, MITSession
+from .forms import DailyCheckinForm, MITSessionFormSet, SkillForm
+from .models import DailyCheckin, MITSession, Skill
 
 
 def _is_checkin_completed(checkin):
@@ -23,14 +25,12 @@ def _current_streak():
     streak = 0
     expected_date = date.today()
     checkin_map = {c.date: c for c in checkins}
-
     while True:
         checkin = checkin_map.get(expected_date)
         if not checkin or not _is_checkin_completed(checkin):
             break
         streak += 1
         expected_date = expected_date - timedelta(days=1)
-
     return streak
 
 
@@ -50,9 +50,8 @@ def home(request):
     completion_rate = round((completed / total) * 100, 1) if total else 0
     current_streak = _current_streak()
 
-    recent_mits = MITSession.objects.select_related("daily_checkin").order_by("-daily_checkin__date", "category")[:9]
+    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").order_by("-daily_checkin__date", "category")[:9]
 
-    # Last 6 months trend
     trend_qs = (
         MITSession.objects.annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
@@ -65,24 +64,13 @@ def home(request):
         .order_by("month")
     )
 
-    trend_labels = []
-    trend_planned = []
-    trend_actual = []
-    trend_completion_rate = []
+    trend_labels, trend_planned, trend_actual = [], [], []
     for row in trend_qs:
         trend_labels.append(row["month"].strftime("%b %Y"))
         trend_planned.append(row["planned"] or 0)
         trend_actual.append(row["actual"] or 0)
-        total_row = row["total"] or 0
-        comp_row = row["completed"] or 0
-        trend_completion_rate.append(round((comp_row / total_row) * 100, 1) if total_row else 0)
 
-    # Category breakdown for current month
-    category_qs = (
-        month_sessions.values("category")
-        .annotate(count=Count("id"), completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)))
-        .order_by("category")
-    )
+    category_qs = month_sessions.values("category").annotate(count=Count("id")).order_by("category")
     category_counts = defaultdict(int)
     for row in category_qs:
         category_counts[row["category"]] = row["count"]
@@ -97,12 +85,12 @@ def home(request):
         "trend_labels": trend_labels,
         "trend_planned": trend_planned,
         "trend_actual": trend_actual,
-        "trend_completion_rate": trend_completion_rate,
-        "category_labels": ["Bible", "Guitar", "Work/Skill"],
+        "category_labels": ["Bible", "Guitar", "Work/Skill", "Custom Skill"],
         "category_data": [
             category_counts[MITSession.Category.BIBLE],
             category_counts[MITSession.Category.GUITAR],
             category_counts[MITSession.Category.WORK_SKILL],
+            category_counts[MITSession.Category.CUSTOM_SKILL],
         ],
     }
     return render(request, "core/home.html", context)
@@ -152,9 +140,56 @@ def checkin_edit(request, pk):
     return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "edit", "checkin": checkin})
 
 
+def skill_manage(request):
+    if request.method == "POST":
+        form = SkillForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Skill added.")
+            return redirect("skill_manage")
+    else:
+        form = SkillForm()
+
+    skills = Skill.objects.all()
+    return render(request, "core/skill_manage.html", {"form": form, "skills": skills})
+
+
 def monthly_summary(request):
+    month_str = request.GET.get("month", "")
+    sessions = MITSession.objects.select_related("daily_checkin", "skill")
+
+    selected_month = None
+    if month_str:
+        try:
+            selected_month = datetime.strptime(month_str, "%Y-%m").date()
+            sessions = sessions.filter(
+                daily_checkin__date__year=selected_month.year,
+                daily_checkin__date__month=selected_month.month,
+            )
+        except ValueError:
+            selected_month = None
+
+    if request.GET.get("export") == "csv":
+        response = HttpResponse(content_type="text/csv")
+        filename = f"mit-summary-{month_str or 'all'}.csv"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow(["Date", "Category", "Skill", "Task", "Planned Minutes", "Actual Minutes", "Status", "Miss Reason"])
+        for s in sessions.order_by("-daily_checkin__date"):
+            writer.writerow([
+                s.daily_checkin.date,
+                s.get_category_display(),
+                s.skill.name if s.skill else "",
+                s.title,
+                s.planned_minutes,
+                s.actual_minutes or "",
+                s.get_status_display(),
+                s.miss_reason,
+            ])
+        return response
+
     rows = (
-        MITSession.objects.annotate(month=TruncMonth("daily_checkin__date"))
+        sessions.annotate(month=TruncMonth("daily_checkin__date"))
         .values("month", "category")
         .annotate(
             count=Count("id"),
@@ -165,9 +200,9 @@ def monthly_summary(request):
         .order_by("-month", "category")
     )
 
-    return render(request, "core/monthly_summary.html", {"rows": rows})
+    return render(request, "core/monthly_summary.html", {"rows": rows, "selected_month": month_str})
 
 
 def checkin_detail(request, pk):
-    checkin = get_object_or_404(DailyCheckin.objects.prefetch_related("mits"), pk=pk)
+    checkin = get_object_or_404(DailyCheckin.objects.prefetch_related("mits__skill"), pk=pk)
     return render(request, "core/checkin_detail.html", {"checkin": checkin})

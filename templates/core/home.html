@@ -3,7 +3,7 @@
 {% block title %}Home · MIT Dashboard{% endblock %}
 
 {% block content %}
-<header class="hero d-flex align-items-center position-relative overflow-hidden">
+<header id="heroSection" class="hero d-flex align-items-center position-relative overflow-hidden">
   <div class="hero-animated-glow"></div>
   <div class="container py-5 position-relative">
     <div class="row align-items-center">
@@ -127,9 +127,18 @@
       type: 'doughnut',
       data: {
         labels: categoryLabels,
-        datasets: [{ data: categoryData, backgroundColor: ['#0d6efd', '#6610f2', '#20c997'] }]
+        datasets: [{ data: categoryData, backgroundColor: ['#0d6efd', '#6610f2', '#20c997', '#fd7e14'] }]
       },
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  const hero = document.getElementById('heroSection');
+  if (hero) {
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 10;
+      hero.style.backgroundPosition = `${50 + x}% ${50 + y}%`;
     });
   }
 </script>

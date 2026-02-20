@@ -8,6 +8,22 @@
     <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
   </div>
 
+  <form method="get" class="card shadow-sm p-3 mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Month filter</label>
+        <input type="month" class="form-control" name="month" value="{{ selected_month }}" />
+      </div>
+      <div class="col-md-8 d-flex gap-2">
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter me-2"></i>Apply</button>
+        <a class="btn btn-outline-secondary" href="{% url 'monthly_summary' %}">Clear</a>
+        <button class="btn btn-outline-success ms-auto" type="submit" name="export" value="csv">
+          <i class="fa-solid fa-file-csv me-2"></i>Export CSV
+        </button>
+      </div>
+    </div>
+  </form>
+
   <div class="card shadow-sm">
     <div class="table-responsive">
       <table class="table table-striped mb-0">

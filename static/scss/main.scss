@@ -12,6 +12,8 @@ body {
   background:
     linear-gradient(120deg, $hero-overlay, rgba(13, 110, 253, 0.35)),
     url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
+  transition: background-position 220ms ease-out;
+  will-change: background-position;
 }
 
 .hero-animated-glow {

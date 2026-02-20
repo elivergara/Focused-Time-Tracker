@@ -22,9 +22,11 @@
           <div class="card-body">
             <h5 class="card-title">{{ mit.get_category_display }}</h5>
             <p class="mb-2">{{ mit.title }}</p>
+            {% if mit.skill %}<p class="mb-1"><strong>Skill:</strong> {{ mit.skill.name }}</p>{% endif %}
             <p class="mb-1"><strong>Planned:</strong> {{ mit.planned_minutes }}m</p>
             <p class="mb-1"><strong>Actual:</strong> {% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</p>
-            <span class="badge text-bg-secondary">{{ mit.get_status_display }}</span>
+            <p class="mb-2"><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></p>
+            {% if mit.miss_reason %}<p class="text-muted small mb-0"><strong>Miss reason:</strong> {{ mit.miss_reason }}</p>{% endif %}
           </div>
         </div>
       </div>

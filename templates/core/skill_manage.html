@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Skills · MIT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card shadow-sm p-4">
+        <h4 class="mb-3">Add Skill</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            {{ form.name }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="form-check mb-3">
+            {{ form.is_active }}
+            <label class="form-check-label">Active</label>
+          </div>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus me-2"></i>Add Skill</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="mb-3">Your Skills</h4>
+          <ul class="list-group list-group-flush">
+            {% for skill in skills %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ skill.name }}</strong>
+                  {% if skill.description %}<div class="text-muted small">{{ skill.description }}</div>{% endif %}
+                </div>
+                <span class="badge {% if skill.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+                  {% if skill.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No skills yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

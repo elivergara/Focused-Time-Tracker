@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import DailyCheckin, MITSession
+from .models import DailyCheckin, MITSession, Skill
 
 
 class MITSessionInline(admin.TabularInline):
@@ -17,6 +17,13 @@ class DailyCheckinAdmin(admin.ModelAdmin):
 
 @admin.register(MITSession)
 class MITSessionAdmin(admin.ModelAdmin):
-    list_display = ("daily_checkin", "category", "title", "planned_minutes", "actual_minutes", "status")
-    list_filter = ("category", "status")
-    search_fields = ("title",)
+    list_display = ("daily_checkin", "category", "skill", "title", "planned_minutes", "actual_minutes", "status")
+    list_filter = ("category", "status", "skill")
+    search_fields = ("title", "miss_reason")
+
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("name", "description")
