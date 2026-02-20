@@ -1,0 +1,19 @@
+{
+  "name": "mit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sass:build": "sass static/scss/main.scss static/css/main.css --no-source-map --style=compressed",
+    "sass:watch": "sass --watch static/scss/main.scss:static/css/main.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "bootstrap": "^5.3.8",
+    "sass": "^1.97.3"
+  }
+}

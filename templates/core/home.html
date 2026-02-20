@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Home · MIT Dashboard{% endblock %}
+
+{% block content %}
+<header class="hero d-flex align-items-center">
+  <div class="container py-5">
+    <div class="row align-items-center">
+      <div class="col-lg-7 text-white">
+        <span class="badge text-bg-primary mb-3">Django · SQLite · Bootstrap</span>
+        <h1 class="display-5 fw-bold mb-3">{{ app_name }}</h1>
+        <p class="lead mb-4">{{ subtitle }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="#" class="btn btn-primary btn-lg"><i class="fa-solid fa-plus me-2"></i>New MIT Session</a>
+          <a href="#" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-chart-line me-2"></i>View Monthly Summary</a>
+        </div>
+      </div>
+      <div class="col-lg-5 mt-4 mt-lg-0">
+        <div class="card glass-card border-0 shadow-lg">
+          <div class="card-body p-4">
+            <h5 class="card-title fw-semibold mb-3"><i class="fa-regular fa-calendar-check me-2"></i>Today at a glance</h5>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2"><i class="fa-solid fa-book-bible text-primary me-2"></i>Bible MIT</li>
+              <li class="mb-2"><i class="fa-solid fa-guitar text-primary me-2"></i>Guitar MIT</li>
+              <li><i class="fa-solid fa-briefcase text-primary me-2"></i>Work/Skill MIT</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
