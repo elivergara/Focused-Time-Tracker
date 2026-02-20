@@ -34,6 +34,31 @@ def _current_streak():
     return streak
 
 
+def _monthly_narrative(month_sessions, completion_rate):
+    if not month_sessions.exists():
+        return "No MITs logged this month yet. Start with one focused check-in today."
+
+    skill_minutes = (
+        month_sessions.values("skill__name")
+        .annotate(actual=Sum("actual_minutes"))
+        .order_by("-actual")
+    )
+    top = next((s for s in skill_minutes if s["skill__name"] and (s["actual"] or 0) > 0), None)
+    if top:
+        lead = f"Top focus so far: {top['skill__name']} ({top['actual'] or 0} min)."
+    else:
+        lead = "You have planned MITs logged, but actual minutes are still sparse."
+
+    if completion_rate >= 80:
+        tone = "Strong consistency this month. Keep the same cadence."
+    elif completion_rate >= 60:
+        tone = "Good momentum. Tighten follow-through on skipped MITs."
+    else:
+        tone = "Execution is below target. Simplify tomorrow’s first MIT and protect the first block."
+
+    return f"{lead} {tone}"
+
+
 def home(request):
     today = date.today()
     month_sessions = MITSession.objects.filter(daily_checkin__date__year=today.year, daily_checkin__date__month=today.month)
@@ -50,30 +75,28 @@ def home(request):
     completion_rate = round((completed / total) * 100, 1) if total else 0
     current_streak = _current_streak()
 
-    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").order_by("-daily_checkin__date", "category")[:9]
+    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").order_by("-daily_checkin__date", "skill__name")[:9]
 
     trend_qs = (
         MITSession.objects.annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
-        .annotate(
-            planned=Sum("planned_minutes"),
-            actual=Sum("actual_minutes"),
-            completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)),
-            total=Count("id"),
-        )
+        .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
         .order_by("month")
     )
+    trend_labels = [r["month"].strftime("%b %Y") for r in trend_qs]
+    trend_planned = [r["planned"] or 0 for r in trend_qs]
+    trend_actual = [r["actual"] or 0 for r in trend_qs]
 
-    trend_labels, trend_planned, trend_actual = [], [], []
-    for row in trend_qs:
-        trend_labels.append(row["month"].strftime("%b %Y"))
-        trend_planned.append(row["planned"] or 0)
-        trend_actual.append(row["actual"] or 0)
+    skill_qs = month_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
+    category_labels = [r["skill__name"] or "(No skill)" for r in skill_qs]
+    category_data = [r["count"] for r in skill_qs]
 
-    category_qs = month_sessions.values("category").annotate(count=Count("id")).order_by("category")
-    category_counts = defaultdict(int)
-    for row in category_qs:
-        category_counts[row["category"]] = row["count"]
+    goals = Skill.objects.filter(is_active=True).order_by("name")
+    goal_progress = []
+    for g in goals:
+        actual = month_sessions.filter(skill=g).aggregate(v=Sum("actual_minutes"))["v"] or 0
+        pct = round((actual / g.goal_minutes) * 100, 1) if g.goal_minutes else 0
+        goal_progress.append({"name": g.name, "goal": g.goal_minutes, "actual": actual, "pct": pct})
 
     context = {
         "app_name": "MIT Dashboard",
@@ -85,13 +108,10 @@ def home(request):
         "trend_labels": trend_labels,
         "trend_planned": trend_planned,
         "trend_actual": trend_actual,
-        "category_labels": ["Bible", "Guitar", "Work/Skill", "Custom Skill"],
-        "category_data": [
-            category_counts[MITSession.Category.BIBLE],
-            category_counts[MITSession.Category.GUITAR],
-            category_counts[MITSession.Category.WORK_SKILL],
-            category_counts[MITSession.Category.CUSTOM_SKILL],
-        ],
+        "category_labels": category_labels,
+        "category_data": category_data,
+        "monthly_narrative": _monthly_narrative(month_sessions, completion_rate),
+        "goal_progress": goal_progress,
     }
     return render(request, "core/home.html", context)
 
@@ -110,14 +130,7 @@ def checkin_create(request):
             return redirect("home")
     else:
         form = DailyCheckinForm(instance=checkin, initial={"date": date.today()})
-        formset = MITSessionFormSet(
-            instance=checkin,
-            initial=[
-                {"category": MITSession.Category.BIBLE, "status": MITSession.Status.PLANNED},
-                {"category": MITSession.Category.GUITAR, "status": MITSession.Status.PLANNED},
-                {"category": MITSession.Category.WORK_SKILL, "status": MITSession.Status.PLANNED},
-            ],
-        )
+        formset = MITSessionFormSet(instance=checkin)
 
     return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "create"})
 
@@ -142,10 +155,23 @@ def checkin_edit(request, pk):
 
 def skill_manage(request):
     if request.method == "POST":
+        action = request.POST.get("action", "create")
+        if action == "delete":
+            skill_id = request.POST.get("skill_id")
+            skill = get_object_or_404(Skill, pk=skill_id)
+            if skill.sessions.exists():
+                skill.is_active = False
+                skill.save(update_fields=["is_active"])
+                messages.info(request, f"{skill.name} has history, so it was deactivated instead of deleted.")
+            else:
+                skill.delete()
+                messages.success(request, "Skill deleted.")
+            return redirect("skill_manage")
+
         form = SkillForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Skill added.")
+            messages.success(request, "Skill saved.")
             return redirect("skill_manage")
     else:
         form = SkillForm()
@@ -158,46 +184,32 @@ def monthly_summary(request):
     month_str = request.GET.get("month", "")
     sessions = MITSession.objects.select_related("daily_checkin", "skill")
 
-    selected_month = None
     if month_str:
         try:
-            selected_month = datetime.strptime(month_str, "%Y-%m").date()
-            sessions = sessions.filter(
-                daily_checkin__date__year=selected_month.year,
-                daily_checkin__date__month=selected_month.month,
-            )
+            selected = datetime.strptime(month_str, "%Y-%m").date()
+            sessions = sessions.filter(daily_checkin__date__year=selected.year, daily_checkin__date__month=selected.month)
         except ValueError:
-            selected_month = None
+            month_str = ""
 
     if request.GET.get("export") == "csv":
         response = HttpResponse(content_type="text/csv")
-        filename = f"mit-summary-{month_str or 'all'}.csv"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Disposition"] = f'attachment; filename="mit-summary-{month_str or "all"}.csv"'
         writer = csv.writer(response)
-        writer.writerow(["Date", "Category", "Skill", "Task", "Planned Minutes", "Actual Minutes", "Status", "Miss Reason"])
+        writer.writerow(["Date", "Skill", "Task", "Planned Minutes", "Actual Minutes", "Status", "Miss Reason"])
         for s in sessions.order_by("-daily_checkin__date"):
-            writer.writerow([
-                s.daily_checkin.date,
-                s.get_category_display(),
-                s.skill.name if s.skill else "",
-                s.title,
-                s.planned_minutes,
-                s.actual_minutes or "",
-                s.get_status_display(),
-                s.miss_reason,
-            ])
+            writer.writerow([s.daily_checkin.date, s.skill.name if s.skill else "", s.title, s.planned_minutes, s.actual_minutes or "", s.get_status_display(), s.miss_reason])
         return response
 
     rows = (
         sessions.annotate(month=TruncMonth("daily_checkin__date"))
-        .values("month", "category")
+        .values("month", "skill__name")
         .annotate(
             count=Count("id"),
             completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)),
             planned_minutes=Sum("planned_minutes"),
             actual_minutes=Sum("actual_minutes"),
         )
-        .order_by("-month", "category")
+        .order_by("-month", "skill__name")
     )
 
     return render(request, "core/monthly_summary.html", {"rows": rows, "selected_month": month_str})

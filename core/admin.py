@@ -17,8 +17,8 @@ class DailyCheckinAdmin(admin.ModelAdmin):
 
 @admin.register(MITSession)
 class MITSessionAdmin(admin.ModelAdmin):
-    list_display = ("daily_checkin", "category", "skill", "title", "planned_minutes", "actual_minutes", "status")
-    list_filter = ("category", "status", "skill")
+    list_display = ("daily_checkin", "skill", "title", "planned_minutes", "actual_minutes", "status")
+    list_filter = ("status", "skill")
     search_fields = ("title", "miss_reason")
 
 

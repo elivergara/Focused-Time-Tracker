@@ -30,7 +30,7 @@
         <thead>
           <tr>
             <th>Month</th>
-            <th>Category</th>
+            <th>Skill</th>
             <th>Count</th>
             <th>Completed</th>
             <th>Planned Minutes</th>
@@ -41,7 +41,7 @@
           {% for row in rows %}
             <tr>
               <td>{{ row.month|date:'M Y' }}</td>
-              <td>{{ row.category|cut:'_'|title }}</td>
+              <td>{{ row.skill__name|default:'(No skill)' }}</td>
               <td>{{ row.count }}</td>
               <td>{{ row.completed }}</td>
               <td>{{ row.planned_minutes|default:0 }}</td>

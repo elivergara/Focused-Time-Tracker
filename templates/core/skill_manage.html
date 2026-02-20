@@ -6,22 +6,15 @@
   <div class="row g-4">
     <div class="col-lg-5">
       <div class="card shadow-sm p-4">
-        <h4 class="mb-3">Add Skill</h4>
+        <h4 class="mb-3">Add / Edit Skill Category</h4>
         <form method="post">
           {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            {{ form.name }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Description</label>
-            {{ form.description }}
-          </div>
-          <div class="form-check mb-3">
-            {{ form.is_active }}
-            <label class="form-check-label">Active</label>
-          </div>
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus me-2"></i>Add Skill</button>
+          <input type="hidden" name="action" value="create" />
+          <div class="mb-3"><label class="form-label">Name</label>{{ form.name }}</div>
+          <div class="mb-3"><label class="form-label">Description</label>{{ form.description }}</div>
+          <div class="mb-3"><label class="form-label">Monthly Goal Minutes</label>{{ form.goal_minutes }}</div>
+          <div class="form-check mb-3">{{ form.is_active }} <label class="form-check-label">Active</label></div>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus me-2"></i>Save Skill</button>
         </form>
       </div>
     </div>
@@ -29,17 +22,26 @@
     <div class="col-lg-7">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h4 class="mb-3">Your Skills</h4>
+          <h4 class="mb-3">Skill Categories</h4>
           <ul class="list-group list-group-flush">
             {% for skill in skills %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ skill.name }}</strong>
-                  {% if skill.description %}<div class="text-muted small">{{ skill.description }}</div>{% endif %}
+              <li class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ skill.name }}</strong>
+                    {% if skill.description %}<div class="text-muted small">{{ skill.description }}</div>{% endif %}
+                    <div class="small text-muted">Goal: {{ skill.goal_minutes }} min/month</div>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <span class="badge {% if skill.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">{% if skill.is_active %}Active{% else %}Inactive{% endif %}</span>
+                    <form method="post" onsubmit="return confirm('Delete this skill category?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="skill_id" value="{{ skill.id }}" />
+                      <button class="btn btn-sm btn-outline-danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                  </div>
                 </div>
-                <span class="badge {% if skill.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-                  {% if skill.is_active %}Active{% else %}Inactive{% endif %}
-                </span>
               </li>
             {% empty %}
               <li class="list-group-item text-muted">No skills yet.</li>

@@ -14,13 +14,14 @@
         <div class="d-flex gap-2 flex-wrap">
           <a href="{% url 'checkin_create' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-plus me-2"></i>New MIT Session</a>
           <a href="{% url 'monthly_summary' %}" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-chart-line me-2"></i>View Monthly Summary</a>
+          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning btn-lg"><i class="fa-solid fa-layer-group me-2"></i>Manage Skills</a>
         </div>
       </div>
       <div class="col-lg-5 mt-4 mt-lg-0">
         <div class="card glass-card border-0 shadow-lg status-card">
           <div class="card-body p-4 p-lg-5">
             <h5 class="card-title fw-semibold mb-3"><i class="fa-regular fa-calendar-check me-2"></i>This month</h5>
-            <ul class="list-unstyled mb-0 fs-6">
+            <ul class="list-unstyled mb-3 fs-6">
               <li class="mb-2">Total MITs: <strong>{{ summary.total|default:0 }}</strong></li>
               <li class="mb-2">Completed: <strong>{{ summary.completed|default:0 }}</strong></li>
               <li class="mb-2">Completion rate: <strong>{{ completion_rate }}%</strong></li>
@@ -28,6 +29,7 @@
               <li class="mb-2">Planned minutes: <strong>{{ summary.planned_minutes|default:0 }}</strong></li>
               <li>Actual minutes: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
             </ul>
+            <div class="small text-muted">{{ monthly_narrative }}</div>
           </div>
         </div>
       </div>
@@ -36,58 +38,41 @@
 </header>
 
 <section class="container my-5">
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Monthly time trend</h5>
-          <canvas id="trendChart" height="120"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Category mix (this month)</h5>
-          <canvas id="categoryChart" height="120"></canvas>
-        </div>
-      </div>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Skill Goals (this month)</h5>
+      {% if goal_progress %}
+        {% for g in goal_progress %}
+          <div class="mb-2">
+            <div class="d-flex justify-content-between small"><span>{{ g.name }}</span><span>{{ g.actual }}/{{ g.goal }} min</span></div>
+            <div class="progress" role="progressbar" aria-valuenow="{{ g.pct }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width: {% if g.pct > 100 %}100{% else %}{{ g.pct }}{% endif %}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-muted">No active skills yet. Add skills and set goals.</div>
+      {% endif %}
     </div>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Recent MITs</h3>
-  </div>
-  <div class="card shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-striped mb-0">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Task</th>
-            <th>Planned</th>
-            <th>Actual</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for mit in recent_mits %}
-            <tr>
-              <td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td>
-              <td>{{ mit.get_category_display }}</td>
-              <td>{{ mit.title }}</td>
-              <td>{{ mit.planned_minutes }}m</td>
-              <td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td>
-              <td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td>
-            </tr>
-          {% empty %}
-            <tr><td colspan="6" class="text-center py-4">No MIT sessions yet. Create your first check-in.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Monthly time trend</h5><canvas id="trendChart" height="120"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Skill mix (this month)</h5><canvas id="categoryChart" height="120"></canvas></div></div>
     </div>
   </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent MITs</h3></div>
+  <div class="card shadow-sm"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Skill</th><th>Task</th><th>Planned</th><th>Actual</th><th>Status</th></tr></thead><tbody>
+  {% for mit in recent_mits %}
+    <tr><td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td><td>{{ mit.skill.name|default:'(No skill)' }}</td><td>{{ mit.title }}</td><td>{{ mit.planned_minutes }}m</td><td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td><td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td></tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center py-4">No MIT sessions yet. Create your first check-in.</td></tr>
+  {% endfor %}
+  </tbody></table></div></div>
 </section>
 
 {{ trend_labels|json_script:"trend-labels" }}
@@ -100,46 +85,19 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <script>
-  const trendLabels = JSON.parse(document.getElementById('trend-labels').textContent);
-  const trendPlanned = JSON.parse(document.getElementById('trend-planned').textContent);
-  const trendActual = JSON.parse(document.getElementById('trend-actual').textContent);
-  const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
-  const categoryData = JSON.parse(document.getElementById('category-data').textContent);
+const trendLabels = JSON.parse(document.getElementById('trend-labels').textContent);
+const trendPlanned = JSON.parse(document.getElementById('trend-planned').textContent);
+const trendActual = JSON.parse(document.getElementById('trend-actual').textContent);
+const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
+const categoryData = JSON.parse(document.getElementById('category-data').textContent);
 
-  const trendCtx = document.getElementById('trendChart');
-  if (trendCtx) {
-    new Chart(trendCtx, {
-      type: 'line',
-      data: {
-        labels: trendLabels,
-        datasets: [
-          { label: 'Planned minutes', data: trendPlanned, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.2)', tension: .35, fill: true },
-          { label: 'Actual minutes', data: trendActual, borderColor: '#20c997', backgroundColor: 'rgba(32,201,151,.2)', tension: .35, fill: true }
-        ]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
-  }
+const trendCtx = document.getElementById('trendChart');
+if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:[{label:'Planned minutes',data:trendPlanned,borderColor:'#0d6efd',backgroundColor:'rgba(13,110,253,.2)',tension:.35,fill:true},{label:'Actual minutes',data:trendActual,borderColor:'#20c997',backgroundColor:'rgba(32,201,151,.2)',tension:.35,fill:true}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
-  const categoryCtx = document.getElementById('categoryChart');
-  if (categoryCtx) {
-    new Chart(categoryCtx, {
-      type: 'doughnut',
-      data: {
-        labels: categoryLabels,
-        datasets: [{ data: categoryData, backgroundColor: ['#0d6efd', '#6610f2', '#20c997', '#fd7e14'] }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
-  }
+const categoryCtx = document.getElementById('categoryChart');
+if (categoryCtx) new Chart(categoryCtx,{type:'doughnut',data:{labels:categoryLabels,datasets:[{data:categoryData,backgroundColor:['#0d6efd','#6610f2','#20c997','#fd7e14','#dc3545','#6c757d']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
-  const hero = document.getElementById('heroSection');
-  if (hero) {
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 10;
-      const y = (e.clientY / window.innerHeight - 0.5) * 10;
-      hero.style.backgroundPosition = `${50 + x}% ${50 + y}%`;
-    });
-  }
+const hero=document.getElementById('heroSection');
+if(hero){window.addEventListener('mousemove',(e)=>{const x=(e.clientX/window.innerWidth-.5)*8;const y=(e.clientY/window.innerHeight-.5)*8;hero.style.backgroundPosition=`${50+x}% ${50+y}%`;});}
 </script>
 {% endblock %}

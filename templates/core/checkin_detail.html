@@ -11,18 +11,15 @@
     </div>
   </div>
 
-  {% if checkin.notes %}
-    <div class="alert alert-light border">{{ checkin.notes }}</div>
-  {% endif %}
+  {% if checkin.notes %}<div class="alert alert-light border">{{ checkin.notes }}</div>{% endif %}
 
   <div class="row g-3">
     {% for mit in checkin.mits.all %}
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h5 class="card-title">{{ mit.get_category_display }}</h5>
+            <h5 class="card-title">{{ mit.skill.name|default:'(No skill)' }}</h5>
             <p class="mb-2">{{ mit.title }}</p>
-            {% if mit.skill %}<p class="mb-1"><strong>Skill:</strong> {{ mit.skill.name }}</p>{% endif %}
             <p class="mb-1"><strong>Planned:</strong> {{ mit.planned_minutes }}m</p>
             <p class="mb-1"><strong>Actual:</strong> {% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</p>
             <p class="mb-2"><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></p>
