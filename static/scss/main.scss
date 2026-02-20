@@ -14,8 +14,36 @@ body {
     url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
 }
 
+.hero-animated-glow {
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(circle at 20% 30%, rgba(13, 110, 253, 0.35), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(111, 66, 193, 0.35), transparent 35%);
+  animation: pulseMove 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes pulseMove {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(2%, 1%, 0) scale(1.08);
+    opacity: 0.9;
+  }
+}
+
 .glass-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(4px);
   border-radius: 1rem;
+}
+
+.status-card {
+  min-height: 360px;
+}
+
+.navbar .nav-link {
+  font-weight: 500;
 }

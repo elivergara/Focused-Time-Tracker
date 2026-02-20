@@ -25,7 +25,7 @@
           {% for row in rows %}
             <tr>
               <td>{{ row.month|date:'M Y' }}</td>
-              <td>{{ row.category|title }}</td>
+              <td>{{ row.category|cut:'_'|title }}</td>
               <td>{{ row.count }}</td>
               <td>{{ row.completed }}</td>
               <td>{{ row.planned_minutes|default:0 }}</td>

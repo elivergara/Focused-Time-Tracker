@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}New Check-in · MIT Dashboard{% endblock %}
+{% block title %}{% if mode == 'edit' %}Edit Check-in{% else %}New Check-in{% endif %} · MIT Dashboard{% endblock %}
 
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <h2 class="mb-3">Daily MIT Check-in</h2>
+    <div class="col-lg-11">
+      <h2 class="mb-3">{% if mode == 'edit' %}Edit MIT Check-in{% else %}Daily MIT Check-in{% endif %}</h2>
       <p class="text-muted">Enter exactly 3 MITs: Bible, Guitar, and Work/Skill.</p>
 
       <form method="post" class="card shadow-sm p-4">
@@ -32,24 +32,24 @@
         {{ formset.management_form }}
         {% for mit_form in formset %}
           <div class="border rounded p-3 mb-3">
-            <div class="row g-3">
-              <div class="col-md-3">
+            <div class="row g-3 align-items-end">
+              <div class="col-lg-2 col-md-6">
                 <label class="form-label">Category</label>
                 {{ mit_form.category }}
               </div>
-              <div class="col-md-4">
+              <div class="col-lg-4 col-md-6">
                 <label class="form-label">Task</label>
                 {{ mit_form.title }}
               </div>
-              <div class="col-md-2">
+              <div class="col-lg-2 col-md-4 col-6">
                 <label class="form-label">Planned min</label>
                 {{ mit_form.planned_minutes }}
               </div>
-              <div class="col-md-2">
+              <div class="col-lg-2 col-md-4 col-6">
                 <label class="form-label">Actual min</label>
                 {{ mit_form.actual_minutes }}
               </div>
-              <div class="col-md-1">
+              <div class="col-lg-2 col-md-4 col-12">
                 <label class="form-label">Status</label>
                 {{ mit_form.status }}
               </div>
@@ -58,8 +58,8 @@
         {% endfor %}
 
         <div class="d-flex gap-2">
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Check-in</button>
-          <a href="{% url 'home' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>{% if mode == 'edit' %}Update Check-in{% else %}Save Check-in{% endif %}</button>
+          <a href="{% if mode == 'edit' %}{% url 'checkin_detail' checkin.pk %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
         </div>
       </form>
     </div>

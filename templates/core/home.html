@@ -3,8 +3,9 @@
 {% block title %}Home · MIT Dashboard{% endblock %}
 
 {% block content %}
-<header class="hero d-flex align-items-center">
-  <div class="container py-5">
+<header class="hero d-flex align-items-center position-relative overflow-hidden">
+  <div class="hero-animated-glow"></div>
+  <div class="container py-5 position-relative">
     <div class="row align-items-center">
       <div class="col-lg-7 text-white">
         <span class="badge text-bg-primary mb-3">Django · SQLite · Bootstrap</span>
@@ -16,12 +17,14 @@
         </div>
       </div>
       <div class="col-lg-5 mt-4 mt-lg-0">
-        <div class="card glass-card border-0 shadow-lg">
-          <div class="card-body p-4">
+        <div class="card glass-card border-0 shadow-lg status-card">
+          <div class="card-body p-4 p-lg-5">
             <h5 class="card-title fw-semibold mb-3"><i class="fa-regular fa-calendar-check me-2"></i>This month</h5>
-            <ul class="list-unstyled mb-0">
+            <ul class="list-unstyled mb-0 fs-6">
               <li class="mb-2">Total MITs: <strong>{{ summary.total|default:0 }}</strong></li>
               <li class="mb-2">Completed: <strong>{{ summary.completed|default:0 }}</strong></li>
+              <li class="mb-2">Completion rate: <strong>{{ completion_rate }}%</strong></li>
+              <li class="mb-2">Current streak: <strong>{{ current_streak }} day{{ current_streak|pluralize }}</strong></li>
               <li class="mb-2">Planned minutes: <strong>{{ summary.planned_minutes|default:0 }}</strong></li>
               <li>Actual minutes: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
             </ul>
@@ -33,6 +36,25 @@
 </header>
 
 <section class="container my-5">
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Monthly time trend</h5>
+          <canvas id="trendChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Category mix (this month)</h5>
+          <canvas id="categoryChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Recent MITs</h3>
   </div>
@@ -67,4 +89,48 @@
     </div>
   </div>
 </section>
+
+{{ trend_labels|json_script:"trend-labels" }}
+{{ trend_planned|json_script:"trend-planned" }}
+{{ trend_actual|json_script:"trend-actual" }}
+{{ category_labels|json_script:"category-labels" }}
+{{ category_data|json_script:"category-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<script>
+  const trendLabels = JSON.parse(document.getElementById('trend-labels').textContent);
+  const trendPlanned = JSON.parse(document.getElementById('trend-planned').textContent);
+  const trendActual = JSON.parse(document.getElementById('trend-actual').textContent);
+  const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
+  const categoryData = JSON.parse(document.getElementById('category-data').textContent);
+
+  const trendCtx = document.getElementById('trendChart');
+  if (trendCtx) {
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [
+          { label: 'Planned minutes', data: trendPlanned, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.2)', tension: .35, fill: true },
+          { label: 'Actual minutes', data: trendActual, borderColor: '#20c997', backgroundColor: 'rgba(32,201,151,.2)', tension: .35, fill: true }
+        ]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  const categoryCtx = document.getElementById('categoryChart');
+  if (categoryCtx) {
+    new Chart(categoryCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categoryLabels,
+        datasets: [{ data: categoryData, backgroundColor: ['#0d6efd', '#6610f2', '#20c997'] }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+</script>
 {% endblock %}
