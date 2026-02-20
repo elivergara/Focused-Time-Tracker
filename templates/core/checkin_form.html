@@ -6,9 +6,9 @@
   <div class="row justify-content-center">
     <div class="col-lg-11">
       <h2 class="mb-3">{% if mode == 'edit' %}Edit MIT Check-in{% else %}Daily MIT Check-in{% endif %}</h2>
-      <p class="text-muted">Enter exactly 3 MITs. Pick any skills you want to track.</p>
+      <p class="text-muted">Add 1 to 8 MIT entries depending on your day.</p>
 
-      <form method="post" class="card shadow-sm p-4">
+      <form method="post" class="card shadow-sm p-4" id="mit-form">
         {% csrf_token %}
 
         {% if form.errors or formset.non_form_errors %}
@@ -21,38 +21,48 @@
         </div>
 
         {{ formset.management_form }}
-        {% for mit_form in formset %}
-          <div class="border rounded p-3 mb-3">
-            <div class="row g-3 align-items-end">
-              <div class="col-lg-2 col-md-6">
-                <label class="form-label">Skill</label>
-                {{ mit_form.skill }}
-              </div>
-              <div class="col-lg-3 col-md-6">
-                <label class="form-label">Task</label>
-                {{ mit_form.title }}
-              </div>
-              <div class="col-lg-1 col-md-3 col-6">
-                <label class="form-label">Plan</label>
-                {{ mit_form.planned_minutes }}
-              </div>
-              <div class="col-lg-1 col-md-3 col-6">
-                <label class="form-label">Actual</label>
-                {{ mit_form.actual_minutes }}
-              </div>
-              <div class="col-lg-2 col-md-4 col-6">
-                <label class="form-label">Status</label>
-                {{ mit_form.status }}
-              </div>
-              <div class="col-lg-3 col-md-8 col-12">
-                <label class="form-label">Miss reason</label>
-                {{ mit_form.miss_reason }}
+        <div id="mit-rows">
+          {% for mit_form in formset %}
+            <div class="border rounded p-3 mb-3 mit-row">
+              {{ mit_form.id }}
+              <div class="row g-3 align-items-end">
+                <div class="col-lg-2 col-md-6">
+                  <label class="form-label">Skill</label>
+                  {{ mit_form.skill }}
+                </div>
+                <div class="col-lg-3 col-md-6">
+                  <label class="form-label">Task</label>
+                  {{ mit_form.title }}
+                </div>
+                <div class="col-lg-1 col-md-3 col-6">
+                  <label class="form-label">Plan</label>
+                  {{ mit_form.planned_minutes }}
+                </div>
+                <div class="col-lg-1 col-md-3 col-6">
+                  <label class="form-label">Actual</label>
+                  {{ mit_form.actual_minutes }}
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                  <label class="form-label">Status</label>
+                  {{ mit_form.status }}
+                </div>
+                <div class="col-lg-2 col-md-8 col-12">
+                  <label class="form-label">Miss reason</label>
+                  {{ mit_form.miss_reason }}
+                </div>
+                <div class="col-lg-1 col-md-12 col-12">
+                  <label class="form-label d-block">Remove</label>
+                  {% if mit_form.DELETE %}
+                    <div class="form-check">{{ mit_form.DELETE }}</div>
+                  {% endif %}
+                </div>
               </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another MIT</button>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>{% if mode == 'edit' %}Update Check-in{% else %}Save Check-in{% endif %}</button>
           <a href="{% if mode == 'edit' %}{% url 'checkin_detail' checkin.pk %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
           <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Skills</a>
@@ -61,4 +71,66 @@
     </div>
   </div>
 </div>
+
+<template id="empty-mit-form-template">
+  <div class="border rounded p-3 mb-3 mit-row">
+    {{ formset.empty_form.id }}
+    <div class="row g-3 align-items-end">
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label">Skill</label>
+        {{ formset.empty_form.skill }}
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Task</label>
+        {{ formset.empty_form.title }}
+      </div>
+      <div class="col-lg-1 col-md-3 col-6">
+        <label class="form-label">Plan</label>
+        {{ formset.empty_form.planned_minutes }}
+      </div>
+      <div class="col-lg-1 col-md-3 col-6">
+        <label class="form-label">Actual</label>
+        {{ formset.empty_form.actual_minutes }}
+      </div>
+      <div class="col-lg-2 col-md-4 col-6">
+        <label class="form-label">Status</label>
+        {{ formset.empty_form.status }}
+      </div>
+      <div class="col-lg-2 col-md-8 col-12">
+        <label class="form-label">Miss reason</label>
+        {{ formset.empty_form.miss_reason }}
+      </div>
+      <div class="col-lg-1 col-md-12 col-12">
+        <label class="form-label d-block">Remove</label>
+        <div class="form-check">{{ formset.empty_form.DELETE }}</div>
+      </div>
+    </div>
+  </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const addBtn = document.getElementById('add-mit-btn');
+    const rows = document.getElementById('mit-rows');
+    const totalForms = document.getElementById('id_mits-TOTAL_FORMS');
+    const maxForms = parseInt(document.getElementById('id_mits-MAX_NUM_FORMS').value || '8', 10);
+    const template = document.getElementById('empty-mit-form-template');
+
+    if (!addBtn || !rows || !totalForms || !template) return;
+
+    addBtn.addEventListener('click', function () {
+      let formCount = parseInt(totalForms.value, 10);
+      if (formCount >= maxForms) {
+        alert('Maximum of ' + maxForms + ' MIT entries per day.');
+        return;
+      }
+
+      let html = template.innerHTML.replaceAll('__prefix__', formCount.toString());
+      rows.insertAdjacentHTML('beforeend', html);
+      totalForms.value = (formCount + 1).toString();
+    });
+  })();
+</script>
 {% endblock %}

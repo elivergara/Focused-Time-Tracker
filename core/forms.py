@@ -50,18 +50,16 @@ class BaseMITSessionInlineFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
         valid_forms = [f for f in self.forms if f.cleaned_data and not f.cleaned_data.get("DELETE", False)]
-        if len(valid_forms) != 3:
-            raise forms.ValidationError("Please enter exactly 3 MITs.")
-
-        skills = [f.cleaned_data.get("skill") for f in valid_forms]
-        if any(s is None for s in skills):
-            raise forms.ValidationError("Choose a skill for each MIT.")
-        if len({s.id for s in skills}) != 3:
-            raise forms.ValidationError("Use three distinct skills in each daily check-in.")
+        if len(valid_forms) < 1:
+            raise forms.ValidationError("Add at least 1 MIT entry.")
 
         for form in valid_forms:
+            skill = form.cleaned_data.get("skill")
             status = form.cleaned_data.get("status")
             miss_reason = (form.cleaned_data.get("miss_reason") or "").strip()
+
+            if not skill:
+                raise forms.ValidationError("Choose a skill for each MIT.")
             if status == MITSession.Status.SKIPPED and not miss_reason:
                 raise forms.ValidationError("Add a miss reason for any skipped MIT.")
 
@@ -71,10 +69,10 @@ MITSessionFormSet = inlineformset_factory(
     MITSession,
     form=MITSessionForm,
     formset=BaseMITSessionInlineFormSet,
-    extra=3,
-    min_num=3,
-    max_num=3,
+    extra=1,
+    min_num=1,
+    max_num=8,
     validate_min=True,
     validate_max=True,
-    can_delete=False,
+    can_delete=True,
 )
