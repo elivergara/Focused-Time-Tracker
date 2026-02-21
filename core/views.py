@@ -10,7 +10,7 @@ from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import DailyCheckinForm, MITSessionFormSet, SignUpForm, SkillForm
+from .forms import DailyCheckinForm, MITSessionFormSet, SignUpForm, FocusCategoryForm
 from .models import DailyCheckin, MITSession, Skill
 
 
@@ -182,7 +182,7 @@ def checkin_create(request):
 
 
 @login_required
-def skill_manage(request):
+def focus_category_manage(request):
     edit_id = request.GET.get("edit")
     editing_skill = None
     if edit_id:
@@ -201,30 +201,30 @@ def skill_manage(request):
             else:
                 skill.delete()
                 messages.success(request, "Focus category deleted.")
-            return redirect("skill_manage")
+            return redirect("focus_category_manage")
 
         if action == "update":
             skill_id = request.POST.get("skill_id")
             skill = get_object_or_404(Skill, pk=skill_id, owner=request.user)
-            form = SkillForm(request.POST, instance=skill)
+            form = FocusCategoryForm(request.POST, instance=skill)
             if form.is_valid():
                 form.save()
                 messages.success(request, "Focus category updated.")
-                return redirect("skill_manage")
+                return redirect("focus_category_manage")
             editing_skill = skill
         else:
-            form = SkillForm(request.POST)
+            form = FocusCategoryForm(request.POST)
             if form.is_valid():
                 skill = form.save(commit=False)
                 skill.owner = request.user
                 skill.save()
                 messages.success(request, "Focus category saved.")
-                return redirect("skill_manage")
+                return redirect("focus_category_manage")
     else:
-        form = SkillForm(instance=editing_skill) if editing_skill else SkillForm()
+        form = FocusCategoryForm(instance=editing_skill) if editing_skill else FocusCategoryForm()
 
-    skills = Skill.objects.filter(owner=request.user)
-    return render(request, "core/skill_manage.html", {"form": form, "skills": skills, "editing_skill": editing_skill})
+    focus_categories = Skill.objects.filter(owner=request.user)
+    return render(request, "core/skill_manage.html", {"form": form, "focus_categories": focus_categories, "editing_focus_category": editing_skill})
 
 
 @login_required
@@ -243,7 +243,7 @@ def monthly_summary(request):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f'attachment; filename="mit-summary-{month_str or "all"}.csv"'
         writer = csv.writer(response)
-        writer.writerow(["Date", "Skill", "Task", "Planned Minutes", "Actual Minutes", "Status", "Miss Reason"])
+        writer.writerow(["Date", "Focus Category", "Task", "Planned Minutes", "Actual Minutes", "Status", "Miss Reason"])
         for s in sessions.order_by("-daily_checkin__date"):
             writer.writerow([s.daily_checkin.date, s.skill.name if s.skill else "", s.title, s.planned_minutes, s.actual_minutes or "", s.get_status_display(), s.miss_reason])
         return response

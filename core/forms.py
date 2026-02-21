@@ -30,7 +30,7 @@ class DailyCheckinForm(forms.ModelForm):
         }
 
 
-class SkillForm(forms.ModelForm):
+class FocusCategoryForm(forms.ModelForm):
     class Meta:
         model = Skill
         fields = ["name", "description", "goal_minutes", "is_active"]
@@ -79,7 +79,7 @@ class BaseMITSessionInlineFormSet(BaseInlineFormSet):
             miss_reason = (form.cleaned_data.get("miss_reason") or "").strip()
 
             if not skill:
-                raise forms.ValidationError("Choose a skill for each MIT.")
+                raise forms.ValidationError("Choose a focus category for each Focus Session.")
             if status == MITSession.Status.SKIPPED and not miss_reason:
                 raise forms.ValidationError("Add a miss reason for any skipped MIT.")
 

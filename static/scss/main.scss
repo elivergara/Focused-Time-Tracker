@@ -74,6 +74,14 @@ body {
   color: #fff;
 }
 
+.action-panel {
+  display: inline-block;
+  background: rgba(8, 18, 40, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.85rem;
+  padding: 0.55rem;
+}
+
 .dashboard-main {
   margin-top: -72px;
   position: relative;

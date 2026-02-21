@@ -11,10 +11,12 @@
         <span class="badge text-bg-primary mb-3">Dashboard</span>
         <h1 class="display-5 fw-bold mb-2">Focus Performance Tracker</h1>
         <p class="lead mb-3">Your focus categories, sessions, and execution — in one operating view.</p>
-        <div class="d-flex gap-2 flex-wrap mb-3">
-          <a href="{% url 'checkin_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>Open Daily Focus Log</a>
-          <a href="{% url 'monthly_summary' %}" class="btn btn-outline-light"><i class="fa-solid fa-chart-line me-2"></i>Monthly Accountability Report</a>
-          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
+        <div class="action-panel mb-3">
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'checkin_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>Open Daily Focus Log</a>
+            <a href="{% url 'monthly_summary' %}" class="btn btn-light text-dark"><i class="fa-solid fa-chart-line me-2"></i>Monthly Accountability Report</a>
+            <a href="{% url 'focus_category_manage' %}" class="btn btn-warning text-dark"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
+          </div>
         </div>
 
         <div class="row g-2 kpi-row">
@@ -72,7 +74,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent Focus Sessions</h3></div>
   <div class="card shadow-sm"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Task</th><th>Planned</th><th>Actual</th><th>Status</th></tr></thead><tbody>
   {% for mit in recent_mits %}
-    <tr><td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td><td>{{ mit.skill.name|default:'(No skill)' }}</td><td>{{ mit.title }}</td><td>{{ mit.planned_minutes }}m</td><td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td><td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td></tr>
+    <tr><td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td><td>{{ mit.skill.name|default:'(No category)' }}</td><td>{{ mit.title }}</td><td>{{ mit.planned_minutes }}m</td><td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td><td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td></tr>
   {% empty %}
     <tr><td colspan="6" class="text-center py-4">No Focus Sessions yet. Create your first daily log.</td></tr>
   {% endfor %}
