@@ -146,54 +146,38 @@ def home(request):
 
 @login_required
 def checkin_create(request):
-    checkin = DailyCheckin(owner=request.user)
+    selected_date = request.GET.get("date")
+    try:
+        target_date = datetime.strptime(selected_date, "%Y-%m-%d").date() if selected_date else date.today()
+    except ValueError:
+        target_date = date.today()
+
+    checkin = DailyCheckin.objects.filter(owner=request.user, date=target_date).first()
+    if not checkin:
+        checkin = DailyCheckin(owner=request.user, date=target_date)
 
     if request.method == "POST":
         form = DailyCheckinForm(request.POST, instance=checkin)
         formset = MITSessionFormSet(request.POST, instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
-        if form.is_valid() and formset.is_valid():
-            checkin = form.save(commit=False)
-            checkin.owner = request.user
 
-            existing = DailyCheckin.objects.filter(owner=request.user, date=checkin.date).first()
-            if existing:
-                messages.info(request, f"A check-in already exists for {checkin.date}. Opened it for editing.")
-                return redirect("checkin_edit", pk=existing.pk)
-
-            checkin.save()
-            formset.instance = checkin
-            formset.save()
-            messages.success(request, "Daily MIT check-in saved.")
-            return redirect("home")
-    else:
-        form = DailyCheckinForm(instance=checkin, initial={"date": date.today()})
-        formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
-
-    return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "create"})
-
-
-@login_required
-def checkin_edit(request, pk):
-    checkin = get_object_or_404(DailyCheckin, pk=pk, owner=request.user)
-
-    if request.method == "POST":
-        form = DailyCheckinForm(request.POST, instance=checkin)
-        formset = MITSessionFormSet(request.POST, instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
         if form.is_valid() and formset.is_valid():
             candidate = form.save(commit=False)
-            collision = DailyCheckin.objects.filter(owner=request.user, date=candidate.date).exclude(pk=checkin.pk).exists()
-            if collision:
-                form.add_error("date", "You already have a check-in on this date.")
-            else:
-                form.save()
-                formset.save()
-                messages.success(request, "Check-in updated.")
-                return redirect("checkin_detail", pk=checkin.pk)
+            existing_other = DailyCheckin.objects.filter(owner=request.user, date=candidate.date).exclude(pk=checkin.pk if checkin.pk else None).first()
+            if existing_other:
+                messages.info(request, f"Loaded existing daily log for {candidate.date}. Add your MITs there.")
+                return redirect(f"/checkins/new/?date={candidate.date.isoformat()}")
+
+            candidate.owner = request.user
+            candidate.save()
+            formset.instance = candidate
+            formset.save()
+            messages.success(request, "Daily log saved.")
+            return redirect(f"/checkins/new/?date={candidate.date.isoformat()}")
     else:
         form = DailyCheckinForm(instance=checkin)
         formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
 
-    return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "edit", "checkin": checkin})
+    return render(request, "core/checkin_form.html", {"form": form, "formset": formset})
 
 
 @login_required
