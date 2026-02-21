@@ -154,6 +154,12 @@ def checkin_create(request):
         if form.is_valid() and formset.is_valid():
             checkin = form.save(commit=False)
             checkin.owner = request.user
+
+            existing = DailyCheckin.objects.filter(owner=request.user, date=checkin.date).first()
+            if existing:
+                messages.info(request, f"A check-in already exists for {checkin.date}. Opened it for editing.")
+                return redirect("checkin_edit", pk=existing.pk)
+
             checkin.save()
             formset.instance = checkin
             formset.save()
@@ -174,10 +180,15 @@ def checkin_edit(request, pk):
         form = DailyCheckinForm(request.POST, instance=checkin)
         formset = MITSessionFormSet(request.POST, instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
         if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            messages.success(request, "Check-in updated.")
-            return redirect("checkin_detail", pk=checkin.pk)
+            candidate = form.save(commit=False)
+            collision = DailyCheckin.objects.filter(owner=request.user, date=candidate.date).exclude(pk=checkin.pk).exists()
+            if collision:
+                form.add_error("date", "You already have a check-in on this date.")
+            else:
+                form.save()
+                formset.save()
+                messages.success(request, "Check-in updated.")
+                return redirect("checkin_detail", pk=checkin.pk)
     else:
         form = DailyCheckinForm(instance=checkin)
         formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
