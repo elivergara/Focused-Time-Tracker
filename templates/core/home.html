@@ -3,31 +3,35 @@
 {% block title %}Home · MIT Dashboard{% endblock %}
 
 {% block content %}
-<header id="heroSection" class="hero d-flex align-items-center position-relative overflow-hidden">
+<header id="heroSection" class="hero hero-dashboard d-flex align-items-center position-relative overflow-hidden">
   <div class="hero-animated-glow"></div>
-  <div class="container py-5 position-relative">
-    <div class="row align-items-center">
+  <div class="container py-4 py-lg-5 position-relative">
+    <div class="row align-items-center g-4">
       <div class="col-lg-7 text-white">
-        <span class="badge text-bg-primary mb-3">Django · SQLite · Bootstrap</span>
-        <h1 class="display-5 fw-bold mb-3">{{ app_name }}</h1>
-        <p class="lead mb-4">{{ subtitle }}</p>
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="{% url 'checkin_create' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-plus me-2"></i>New MIT Session</a>
-          <a href="{% url 'monthly_summary' %}" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-chart-line me-2"></i>View Monthly Summary</a>
-          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning btn-lg"><i class="fa-solid fa-layer-group me-2"></i>Manage Skills</a>
+        <span class="badge text-bg-primary mb-3">Dashboard</span>
+        <h1 class="display-5 fw-bold mb-2">MIT Dashboard</h1>
+        <p class="lead mb-3">Your focus, skills, and execution — in one operating view.</p>
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          <a href="{% url 'checkin_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>New MIT Session</a>
+          <a href="{% url 'monthly_summary' %}" class="btn btn-outline-light"><i class="fa-solid fa-chart-line me-2"></i>Monthly Summary</a>
+          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning"><i class="fa-solid fa-layer-group me-2"></i>Manage Skills</a>
+        </div>
+
+        <div class="row g-2 kpi-row">
+          <div class="col-6 col-md-3"><div class="kpi-chip"><small>Total</small><strong>{{ summary.total|default:0 }}</strong></div></div>
+          <div class="col-6 col-md-3"><div class="kpi-chip"><small>Completed</small><strong>{{ summary.completed|default:0 }}</strong></div></div>
+          <div class="col-6 col-md-3"><div class="kpi-chip"><small>Completion</small><strong>{{ completion_rate }}%</strong></div></div>
+          <div class="col-6 col-md-3"><div class="kpi-chip"><small>Streak</small><strong>{{ current_streak }}d</strong></div></div>
         </div>
       </div>
-      <div class="col-lg-5 mt-4 mt-lg-0">
+
+      <div class="col-lg-5">
         <div class="card glass-card border-0 shadow-lg status-card">
-          <div class="card-body p-4 p-lg-5">
+          <div class="card-body p-4">
             <h5 class="card-title fw-semibold mb-3"><i class="fa-regular fa-calendar-check me-2"></i>This month</h5>
             <ul class="list-unstyled mb-3 fs-6">
-              <li class="mb-2">Total MITs: <strong>{{ summary.total|default:0 }}</strong></li>
-              <li class="mb-2">Completed: <strong>{{ summary.completed|default:0 }}</strong></li>
-              <li class="mb-2">Completion rate: <strong>{{ completion_rate }}%</strong></li>
-              <li class="mb-2">Current streak: <strong>{{ current_streak }} day{{ current_streak|pluralize }}</strong></li>
               <li class="mb-2">Planned minutes: <strong>{{ summary.planned_minutes|default:0 }}</strong></li>
-              <li>Actual minutes: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
+              <li class="mb-2">Actual minutes: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
             </ul>
             <div class="small text-muted">{{ monthly_narrative }}</div>
           </div>
@@ -37,7 +41,16 @@
   </div>
 </header>
 
-<section class="container my-5">
+<section class="container dashboard-main pb-4">
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Monthly time trend</h5><canvas id="trendChart" height="110"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Skill mix (this month)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
+    </div>
+  </div>
+
   <div class="card shadow-sm mb-4">
     <div class="card-body">
       <h5 class="card-title">Skill Goals (this month)</h5>
@@ -53,15 +66,6 @@
       {% else %}
         <div class="text-muted">No active skills yet. Add skills and set goals.</div>
       {% endif %}
-    </div>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Monthly time trend</h5><canvas id="trendChart" height="120"></canvas></div></div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Skill mix (this month)</h5><canvas id="categoryChart" height="120"></canvas></div></div>
     </div>
   </div>
 

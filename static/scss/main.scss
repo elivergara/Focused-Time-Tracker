@@ -8,12 +8,16 @@ body {
 }
 
 .hero {
-  min-height: calc(100vh - 56px);
+  min-height: calc(72vh - 56px);
   background:
     linear-gradient(120deg, $hero-overlay, rgba(13, 110, 253, 0.35)),
     url("https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
   transition: background-position 220ms ease-out;
   will-change: background-position;
+}
+
+.hero-dashboard {
+  min-height: 56vh;
 }
 
 .hero-animated-glow {
@@ -49,7 +53,31 @@ body {
 }
 
 .status-card {
-  min-height: 360px;
+  min-height: 280px;
+}
+
+.kpi-chip {
+  background: rgba(8, 18, 40, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.kpi-chip small {
+  display: block;
+  color: rgba(240, 246, 255, 0.82);
+  line-height: 1.1;
+}
+
+.kpi-chip strong {
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.dashboard-main {
+  margin-top: -72px;
+  position: relative;
+  z-index: 5;
 }
 
 .navbar .nav-link {
@@ -111,5 +139,8 @@ body {
   }
   .sticky-cta-bar .container {
     justify-content: center !important;
+  }
+  .dashboard-main {
+    margin-top: 0;
   }
 }
