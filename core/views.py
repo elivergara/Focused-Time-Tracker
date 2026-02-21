@@ -14,12 +14,6 @@ from .forms import DailyCheckinForm, MITSessionFormSet, SignUpForm, SkillForm
 from .models import DailyCheckin, MITSession, Skill
 
 
-def _ensure_default_skills(user):
-    defaults = ["Bible", "Guitar", "Work/Skills"]
-    for name in defaults:
-        Skill.objects.get_or_create(owner=user, name=name, defaults={"description": "Default category", "goal_minutes": 120, "is_active": True})
-
-
 def _is_checkin_completed(checkin):
     mits = list(checkin.mits.all())
     return len(mits) >= 1 and all(m.status == MITSession.Status.COMPLETED for m in mits)
@@ -78,7 +72,6 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            _ensure_default_skills(user)
             login(request, user)
             messages.success(request, "Account created. Welcome to MIT Dashboard.")
             return redirect("home")
@@ -90,8 +83,6 @@ def signup(request):
 
 @login_required
 def home(request):
-    _ensure_default_skills(request.user)
-
     today = date.today()
     month_sessions = MITSession.objects.filter(
         daily_checkin__owner=request.user,
