@@ -32,9 +32,9 @@
                 </form>
               </li>
             {% else %}
-              <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}">Home</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}"><i class="fa-solid fa-house me-1 nav-icon-subtle"></i>Home</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}"><i class="fa-solid fa-right-to-bracket me-1 nav-icon-subtle"></i>Login</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}"><i class="fa-solid fa-user-plus me-1 nav-icon-subtle"></i>Sign Up</a></li>
             {% endif %}
           </ul>
         </div>
