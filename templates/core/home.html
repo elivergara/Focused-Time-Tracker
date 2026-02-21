@@ -10,11 +10,11 @@
       <div class="col-lg-7 text-white">
         <span class="badge text-bg-primary mb-3">Dashboard</span>
         <h1 class="display-5 fw-bold mb-2">MIT Dashboard</h1>
-        <p class="lead mb-3">Your focus areas and execution — in one operating view.</p>
+        <p class="lead mb-3">Your focus categories and execution — in one operating view.</p>
         <div class="d-flex gap-2 flex-wrap mb-3">
           <a href="{% url 'checkin_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>Open Daily Log</a>
           <a href="{% url 'monthly_summary' %}" class="btn btn-outline-light"><i class="fa-solid fa-chart-line me-2"></i>Monthly Summary</a>
-          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning"><i class="fa-solid fa-layer-group me-2"></i>Manage Areas</a>
+          <a href="{% url 'skill_manage' %}" class="btn btn-outline-warning"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
         </div>
 
         <div class="row g-2 kpi-row">
@@ -47,13 +47,13 @@
       <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Monthly time trend</h5><canvas id="trendChart" height="110"></canvas></div></div>
     </div>
     <div class="col-lg-4">
-      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Area mix (this month)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title">Focus Category Mix (this month)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
     </div>
   </div>
 
   <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <h5 class="card-title">Area Goals (this month)</h5>
+      <h5 class="card-title">Focus Category Goals (this month)</h5>
       {% if goal_progress %}
         {% for g in goal_progress %}
           <div class="mb-2">
@@ -70,7 +70,7 @@
   </div>
 
   <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent MITs</h3></div>
-  <div class="card shadow-sm"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Area</th><th>Task</th><th>Planned</th><th>Actual</th><th>Status</th></tr></thead><tbody>
+  <div class="card shadow-sm"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Task</th><th>Planned</th><th>Actual</th><th>Status</th></tr></thead><tbody>
   {% for mit in recent_mits %}
     <tr><td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td><td>{{ mit.skill.name|default:'(No skill)' }}</td><td>{{ mit.title }}</td><td>{{ mit.planned_minutes }}m</td><td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td><td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td></tr>
   {% empty %}

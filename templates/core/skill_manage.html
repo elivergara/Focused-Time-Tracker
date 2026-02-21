@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Areas · MIT Dashboard{% endblock %}
+{% block title %}Focus Categories · MIT Dashboard{% endblock %}
 
 {% block content %}
 <div class="container py-5">
   <div class="row g-4">
     <div class="col-lg-5">
       <div class="card shadow-sm p-4">
-        <h4 class="mb-3">Add / Edit Focus Area</h4>
+        <h4 class="mb-3">Add / Edit Focus Category</h4>
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="action" value="create" />
@@ -14,7 +14,7 @@
           <div class="mb-3"><label class="form-label">Description</label>{{ form.description }}</div>
           <div class="mb-3"><label class="form-label">Monthly Goal Minutes</label>{{ form.goal_minutes }}</div>
           <div class="form-check mb-3">{{ form.is_active }} <label class="form-check-label">Active</label></div>
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus me-2"></i>Save Area</button>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus me-2"></i>Save Focus Category</button>
         </form>
       </div>
     </div>
@@ -22,7 +22,7 @@
     <div class="col-lg-7">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h4 class="mb-3">Focus Areas</h4>
+          <h4 class="mb-3">Focus Categories</h4>
           <ul class="list-group list-group-flush">
             {% for skill in skills %}
               <li class="list-group-item">
@@ -38,7 +38,7 @@
                       {% csrf_token %}
                       <input type="hidden" name="action" value="delete" />
                       <input type="hidden" name="skill_id" value="{{ skill.id }}" />
-                      <button class="btn btn-sm btn-outline-danger" type="submit" title="Delete area"><i class="fa-solid fa-trash"></i></button>
+                      <button class="btn btn-sm btn-outline-danger" type="submit" title="Delete focus category"><i class="fa-solid fa-trash"></i></button>
                     </form>
                   </div>
                 </div>

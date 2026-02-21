@@ -34,7 +34,7 @@
               {{ mit_form.id }}
               <div class="row g-3 align-items-end">
                 <div class="col-lg-2 col-md-6">
-                  <label class="form-label">Area</label>
+                  <label class="form-label">Focus Category</label>
                   {{ mit_form.skill }}
                 </div>
                 <div class="col-lg-3 col-md-6">
@@ -72,7 +72,7 @@
           <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another MIT</button>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Daily Log</button>
           <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
-          <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Areas</a>
+          <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
         </div>
       </form>
     </div>
@@ -84,7 +84,7 @@
     {{ formset.empty_form.id }}
     <div class="row g-3 align-items-end">
       <div class="col-lg-2 col-md-6">
-        <label class="form-label">Area</label>
+        <label class="form-label">Focus Category</label>
         {{ formset.empty_form.skill }}
       </div>
       <div class="col-lg-3 col-md-6">
