@@ -11,7 +11,7 @@ body {
   min-height: calc(100vh - 56px);
   background:
     linear-gradient(120deg, $hero-overlay, rgba(13, 110, 253, 0.35)),
-    url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
+    url("https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
   transition: background-position 220ms ease-out;
   will-change: background-position;
 }
