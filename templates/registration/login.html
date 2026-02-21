@@ -2,26 +2,43 @@
 {% block title %}Login · MIT Dashboard{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card shadow-sm p-4">
-        <h3 class="mb-3">Login</h3>
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" name="username" class="form-control" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" required />
-          </div>
-          <button class="btn btn-primary w-100" type="submit">Sign in</button>
-        </form>
-        <div class="mt-3 small text-muted">No account? <a href="{% url 'signup' %}">Create one</a></div>
+<section class="auth-page d-flex align-items-center py-5">
+  <div class="container">
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-6">
+        <div class="auth-info-card h-100 p-4 p-lg-5 text-white">
+          <span class="badge text-bg-light text-dark mb-3">MIT Dashboard</span>
+          <h1 class="display-6 fw-bold mb-3">Build consistent progress, one focused block at a time.</h1>
+          <p class="lead mb-4">Track daily MIT sessions, custom skill categories, completion rate, streaks, monthly goals, and performance trends — all in one clean dashboard.</p>
+          <ul class="list-unstyled auth-feature-list mb-0">
+            <li><i class="fa-solid fa-check me-2"></i>Skill/category tracking with monthly goals</li>
+            <li><i class="fa-solid fa-check me-2"></i>Flexible 1–8 MIT entries per day</li>
+            <li><i class="fa-solid fa-check me-2"></i>Monthly analytics + CSV export</li>
+            <li><i class="fa-solid fa-check me-2"></i>Private user accounts with isolated data</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card shadow-lg border-0 p-4 p-lg-5 auth-form-card">
+          <h3 class="mb-3">Login</h3>
+          <p class="text-muted mb-4">Welcome back. Sign in to continue your MIT tracking.</p>
+          <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}<div class="alert alert-danger">Invalid username or password.</div>{% endif %}
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control" required />
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Sign in</button>
+          </form>
+          <div class="mt-3 small text-muted">No account? <a href="{% url 'signup' %}">Create one</a></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 {% endblock %}
