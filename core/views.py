@@ -177,7 +177,8 @@ def checkin_create(request):
         form = DailyCheckinForm(instance=checkin)
         formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
 
-    return render(request, "core/checkin_form.html", {"form": form, "formset": formset})
+    logged_count = checkin.mits.count() if checkin.pk else 0
+    return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "logged_count": logged_count, "has_existing": bool(checkin.pk)})
 
 
 @login_required

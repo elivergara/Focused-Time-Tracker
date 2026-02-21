@@ -7,6 +7,13 @@
     <div class="col-lg-11">
       <h2 class="mb-3">Daily MIT Log</h2>
       <p class="text-muted">Use one daily log per date. Add as many MIT entries (1–8) as you need.</p>
+      <p class="small {% if has_existing %}text-success{% else %}text-muted{% endif %} mb-3">
+        {% if has_existing %}
+          You have <strong>{{ logged_count }}</strong> MIT entr{{ logged_count|pluralize:'y,ies' }} logged for this date. You can update them below.
+        {% else %}
+          No MIT entries logged for this date yet.
+        {% endif %}
+      </p>
 
       <form method="post" class="card shadow-sm p-4" id="mit-form">
         {% csrf_token %}
