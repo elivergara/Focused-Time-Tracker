@@ -143,6 +143,16 @@ body {
   border-color: rgba(13, 110, 253, 0.35) !important;
 }
 
+.focus-category-item.focus-category-inactive {
+  background: #f3f4f6;
+  opacity: 0.75;
+}
+
+.focus-category-item.focus-category-inactive strong,
+.focus-category-item.focus-category-inactive .text-muted {
+  color: #6c757d !important;
+}
+
 @media (max-width: 768px) {
   .landing-shot {
     height: 300px;

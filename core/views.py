@@ -183,8 +183,14 @@ def checkin_create(request):
 
 @login_required
 def skill_manage(request):
+    edit_id = request.GET.get("edit")
+    editing_skill = None
+    if edit_id:
+        editing_skill = get_object_or_404(Skill, pk=edit_id, owner=request.user)
+
     if request.method == "POST":
         action = request.POST.get("action", "create")
+
         if action == "delete":
             skill_id = request.POST.get("skill_id")
             skill = get_object_or_404(Skill, pk=skill_id, owner=request.user)
@@ -197,18 +203,28 @@ def skill_manage(request):
                 messages.success(request, "Focus category deleted.")
             return redirect("skill_manage")
 
-        form = SkillForm(request.POST)
-        if form.is_valid():
-            skill = form.save(commit=False)
-            skill.owner = request.user
-            skill.save()
-            messages.success(request, "Focus category saved.")
-            return redirect("skill_manage")
+        if action == "update":
+            skill_id = request.POST.get("skill_id")
+            skill = get_object_or_404(Skill, pk=skill_id, owner=request.user)
+            form = SkillForm(request.POST, instance=skill)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Focus category updated.")
+                return redirect("skill_manage")
+            editing_skill = skill
+        else:
+            form = SkillForm(request.POST)
+            if form.is_valid():
+                skill = form.save(commit=False)
+                skill.owner = request.user
+                skill.save()
+                messages.success(request, "Focus category saved.")
+                return redirect("skill_manage")
     else:
-        form = SkillForm()
+        form = SkillForm(instance=editing_skill) if editing_skill else SkillForm()
 
     skills = Skill.objects.filter(owner=request.user)
-    return render(request, "core/skill_manage.html", {"form": form, "skills": skills})
+    return render(request, "core/skill_manage.html", {"form": form, "skills": skills, "editing_skill": editing_skill})
 
 
 @login_required
