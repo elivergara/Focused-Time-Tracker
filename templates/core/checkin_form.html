@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Daily Log · MIT Dashboard{% endblock %}
+{% block title %}Daily Focus Log · Focus Performance Tracker{% endblock %}
 
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-11">
-      <h2 class="mb-3">Daily MIT Log</h2>
-      <p class="text-muted">Use one daily log per date. Add as many MIT entries (1–8) as you need.</p>
+      <h2 class="mb-3">Daily Focus Log</h2>
+      <p class="text-muted">Use one daily focus log per date. Add as many Focus Sessions (1–8) as you need.</p>
       <p class="small {% if has_existing %}text-success{% else %}text-muted{% endif %} mb-3">
         {% if has_existing %}
-          You have <strong>{{ logged_count }}</strong> MIT entr{{ logged_count|pluralize:'y,ies' }} logged for this date. You can update them below.
+          You have <strong>{{ logged_count }}</strong> Focus Session{{ logged_count|pluralize }} logged for this date. You can update them below.
         {% else %}
-          No MIT entries logged for this date yet.
+          No Focus Sessions logged for this date yet.
         {% endif %}
       </p>
 
@@ -69,7 +69,7 @@
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another MIT</button>
+          <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another Focus Session</button>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Daily Log</button>
           <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
           <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
@@ -157,7 +157,7 @@
     addBtn.addEventListener('click', function () {
       let formCount = parseInt(totalForms.value, 10);
       if (formCount >= maxForms) {
-        alert('Maximum of ' + maxForms + ' MIT entries per day.');
+        alert('Maximum of ' + maxForms + ' Focus Sessions per day.');
         return;
       }
 

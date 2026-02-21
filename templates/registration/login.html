@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Login · MIT Dashboard{% endblock %}
+{% block title %}Login · Focus Performance Tracker{% endblock %}
 
 {% block content %}
 <section class="auth-page d-flex align-items-center py-5">
@@ -7,13 +7,13 @@
     <div class="row g-4 align-items-stretch">
       <div class="col-lg-6">
         <div class="auth-info-card h-100 p-4 p-lg-5 text-white">
-          <span class="badge text-bg-light text-dark mb-3">MIT Dashboard</span>
+          <span class="badge text-bg-light text-dark mb-3">Focus Performance Tracker</span>
           <h1 class="display-6 fw-bold mb-3">Build consistent progress, one focused block at a time.</h1>
-          <p class="lead mb-4">MIT Dashboard is a professional focus and accountability system for individuals and teams who want measurable progress — not vague productivity promises.</p>
+          <p class="lead mb-4">Focus Performance Tracker is a professional focus and accountability system for individuals and teams who want measurable progress — not vague productivity promises.</p>
           <p class="mb-3">Plan intentional work, execute with clarity, and review outcomes through structured analytics that help you improve every month.</p>
           <ul class="list-unstyled auth-feature-list mb-0">
             <li><i class="fa-solid fa-check me-2"></i>Focus category tracking with monthly goals</li>
-            <li><i class="fa-solid fa-check me-2"></i>Flexible 1–8 MIT entries per day</li>
+            <li><i class="fa-solid fa-check me-2"></i>Flexible 1–8 Focus Sessions per day</li>
             <li><i class="fa-solid fa-check me-2"></i>Monthly analytics + CSV export</li>
             <li><i class="fa-solid fa-check me-2"></i>Private user accounts with isolated data</li>
           </ul>
@@ -22,7 +22,7 @@
       <div class="col-lg-6">
         <div class="card shadow-lg border-0 p-4 p-lg-5 auth-form-card">
           <h3 class="mb-3">Login</h3>
-          <p class="text-muted mb-4">Welcome back. Sign in to continue your MIT tracking.</p>
+          <p class="text-muted mb-4">Welcome back. Sign in to continue your focus tracking.</p>
           <form method="post">
             {% csrf_token %}
             {% if form.errors %}<div class="alert alert-danger">Invalid username or password.</div>{% endif %}
