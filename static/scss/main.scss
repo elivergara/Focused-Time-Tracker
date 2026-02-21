@@ -37,9 +37,15 @@ body {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(4px);
+  background: rgba(8, 18, 40, 0.72);
+  color: #eaf1ff;
+  backdrop-filter: blur(6px);
   border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-card .text-muted {
+  color: rgba(234, 241, 255, 0.78) !important;
 }
 
 .status-card {
