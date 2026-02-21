@@ -10,7 +10,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
       <div class="container">
-        <a class="navbar-brand fw-semibold" href="/">
+        <a class="navbar-brand fw-semibold" href="{% if request.user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">
           <i class="fa-solid fa-bullseye me-2"></i>MIT Dashboard
         </a>
 
@@ -32,6 +32,7 @@
                 </form>
               </li>
             {% else %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}">Home</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
             {% endif %}

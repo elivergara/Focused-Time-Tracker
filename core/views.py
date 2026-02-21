@@ -64,6 +64,12 @@ def _monthly_narrative(month_sessions, completion_rate):
     return f"{lead} {tone}"
 
 
+def landing(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+    return render(request, "core/landing.html")
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect("home")

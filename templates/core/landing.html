@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}MIT Dashboard · Focus with intention{% endblock %}
+
+{% block content %}
+<section class="auth-page d-flex align-items-center py-5">
+  <div class="container text-white">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <span class="badge text-bg-light text-dark mb-3">MIT Dashboard</span>
+        <h1 class="display-4 fw-bold mb-3">Track what matters. Build momentum daily.</h1>
+        <p class="lead mb-4">A clean system for focused work: flexible MIT logging, custom skill/category tracking, monthly goals, streaks, and progress analytics.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Get Started</a>
+          <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Sign In</a>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="auth-info-card p-4 p-lg-5">
+          <h4 class="mb-3">What you get</h4>
+          <ul class="list-unstyled auth-feature-list mb-0">
+            <li><i class="fa-solid fa-check me-2"></i>Flexible MIT entries (1–8/day)</li>
+            <li><i class="fa-solid fa-check me-2"></i>Your own skill categories + goals</li>
+            <li><i class="fa-solid fa-check me-2"></i>Monthly summary and CSV export</li>
+            <li><i class="fa-solid fa-check me-2"></i>Private account with isolated data</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
