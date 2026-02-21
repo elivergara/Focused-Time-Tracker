@@ -34,7 +34,7 @@
               {{ mit_form.id }}
               <div class="row g-3 align-items-end">
                 <div class="col-lg-2 col-md-6">
-                  <label class="form-label">Skill</label>
+                  <label class="form-label">Area</label>
                   {{ mit_form.skill }}
                 </div>
                 <div class="col-lg-3 col-md-6">
@@ -72,7 +72,7 @@
           <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another MIT</button>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Daily Log</button>
           <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
-          <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Skills</a>
+          <a href="{% url 'skill_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Areas</a>
         </div>
       </form>
     </div>
@@ -84,7 +84,7 @@
     {{ formset.empty_form.id }}
     <div class="row g-3 align-items-end">
       <div class="col-lg-2 col-md-6">
-        <label class="form-label">Skill</label>
+        <label class="form-label">Area</label>
         {{ formset.empty_form.skill }}
       </div>
       <div class="col-lg-3 col-md-6">
@@ -127,6 +127,33 @@
 
     if (!addBtn || !rows || !totalForms || !template) return;
 
+    function updateRowState(row) {
+      const skill = row.querySelector('select[name$="-skill"]');
+      const title = row.querySelector('input[name$="-title"]');
+      const planned = row.querySelector('input[name$="-planned_minutes"]');
+      const actual = row.querySelector('input[name$="-actual_minutes"]');
+      const removed = row.querySelector('input[name$="-DELETE"]');
+
+      const isFilled = (
+        (skill && skill.value) ||
+        (title && title.value.trim().length > 0) ||
+        (planned && planned.value) ||
+        (actual && actual.value)
+      ) && !(removed && removed.checked);
+
+      row.classList.toggle('mit-row-active', !!isFilled);
+    }
+
+    function bindRow(row) {
+      row.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', () => updateRowState(row));
+        el.addEventListener('change', () => updateRowState(row));
+      });
+      updateRowState(row);
+    }
+
+    rows.querySelectorAll('.mit-row').forEach(bindRow);
+
     addBtn.addEventListener('click', function () {
       let formCount = parseInt(totalForms.value, 10);
       if (formCount >= maxForms) {
@@ -136,6 +163,8 @@
 
       let html = template.innerHTML.replaceAll('__prefix__', formCount.toString());
       rows.insertAdjacentHTML('beforeend', html);
+      const newRow = rows.lastElementChild;
+      if (newRow) bindRow(newRow);
       totalForms.value = (formCount + 1).toString();
     });
   })();

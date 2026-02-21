@@ -18,7 +18,7 @@
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h5 class="card-title">{{ mit.skill.name|default:'(No skill)' }}</h5>
+            <h5 class="card-title">{{ mit.skill.name|default:'(No area)' }}</h5>
             <p class="mb-2">{{ mit.title }}</p>
             <p class="mb-1"><strong>Planned:</strong> {{ mit.planned_minutes }}m</p>
             <p class="mb-1"><strong>Actual:</strong> {% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</p>

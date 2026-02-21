@@ -24,7 +24,7 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fa-solid fa-house me-1"></i>Home</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'checkin_create' %}"><i class="fa-solid fa-plus me-1"></i>Daily Log</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'monthly_summary' %}"><i class="fa-solid fa-chart-column me-1"></i>Monthly</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'skill_manage' %}"><i class="fa-solid fa-layer-group me-1"></i>Skills</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'skill_manage' %}"><i class="fa-solid fa-layer-group me-1"></i>Areas</a></li>
               <li class="nav-item"><span class="nav-link text-light-emphasis">{{ request.user.username }}</span></li>
               <li class="nav-item">
                 <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}

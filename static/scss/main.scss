@@ -133,6 +133,16 @@ body {
   padding-bottom: 84px;
 }
 
+.mit-row {
+  background: rgba(255, 255, 255, 0.35);
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.mit-row.mit-row-active {
+  background: rgba(13, 110, 253, 0.09);
+  border-color: rgba(13, 110, 253, 0.35) !important;
+}
+
 @media (max-width: 768px) {
   .landing-shot {
     height: 300px;

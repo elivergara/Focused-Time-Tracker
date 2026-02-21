@@ -116,7 +116,7 @@ def home(request):
     trend_actual = [r["actual"] or 0 for r in trend_qs]
 
     skill_qs = month_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
-    category_labels = [r["skill__name"] or "(No skill)" for r in skill_qs]
+    category_labels = [r["skill__name"] or "(No area)" for r in skill_qs]
     category_data = [r["count"] for r in skill_qs]
 
     goals = Skill.objects.filter(owner=request.user, is_active=True).order_by("name")
@@ -194,7 +194,7 @@ def skill_manage(request):
                 messages.info(request, f"{skill.name} has history, so it was deactivated instead of deleted.")
             else:
                 skill.delete()
-                messages.success(request, "Skill deleted.")
+                messages.success(request, "Area deleted.")
             return redirect("skill_manage")
 
         form = SkillForm(request.POST)
@@ -202,7 +202,7 @@ def skill_manage(request):
             skill = form.save(commit=False)
             skill.owner = request.user
             skill.save()
-            messages.success(request, "Skill saved.")
+            messages.success(request, "Area saved.")
             return redirect("skill_manage")
     else:
         form = SkillForm()
