@@ -75,12 +75,21 @@ body {
 }
 
 .action-panel {
-  display: inline-block;
+  display: block;
+  width: 760px;
+  max-width: 100%;
   background: rgba(6, 14, 32, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 0.9rem;
   padding: 0.6rem;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.kpi-row {
+  width: 760px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .action-btn {
