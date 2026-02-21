@@ -3,22 +3,30 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 
 from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import DailyCheckinForm, MITSessionFormSet, SkillForm
+from .forms import DailyCheckinForm, MITSessionFormSet, SignUpForm, SkillForm
 from .models import DailyCheckin, MITSession, Skill
+
+
+def _ensure_default_skills(user):
+    defaults = ["Bible", "Guitar", "Work/Skills"]
+    for name in defaults:
+        Skill.objects.get_or_create(owner=user, name=name, defaults={"description": "Default category", "goal_minutes": 120, "is_active": True})
 
 
 def _is_checkin_completed(checkin):
     mits = list(checkin.mits.all())
-    return len(mits) == 3 and all(m.status == MITSession.Status.COMPLETED for m in mits)
+    return len(mits) >= 1 and all(m.status == MITSession.Status.COMPLETED for m in mits)
 
 
-def _current_streak():
-    checkins = DailyCheckin.objects.prefetch_related("mits").order_by("-date")
+def _current_streak(user):
+    checkins = DailyCheckin.objects.filter(owner=user).prefetch_related("mits").order_by("-date")
     if not checkins.exists():
         return 0
 
@@ -44,10 +52,7 @@ def _monthly_narrative(month_sessions, completion_rate):
         .order_by("-actual")
     )
     top = next((s for s in skill_minutes if s["skill__name"] and (s["actual"] or 0) > 0), None)
-    if top:
-        lead = f"Top focus so far: {top['skill__name']} ({top['actual'] or 0} min)."
-    else:
-        lead = "You have planned MITs logged, but actual minutes are still sparse."
+    lead = f"Top focus so far: {top['skill__name']} ({top['actual'] or 0} min)." if top else "You have planned MITs logged, but actual minutes are still sparse."
 
     if completion_rate >= 80:
         tone = "Strong consistency this month. Keep the same cadence."
@@ -59,9 +64,34 @@ def _monthly_narrative(month_sessions, completion_rate):
     return f"{lead} {tone}"
 
 
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            _ensure_default_skills(user)
+            login(request, user)
+            messages.success(request, "Account created. Welcome to MIT Dashboard.")
+            return redirect("home")
+    else:
+        form = SignUpForm()
+
+    return render(request, "core/signup.html", {"form": form})
+
+
+@login_required
 def home(request):
+    _ensure_default_skills(request.user)
+
     today = date.today()
-    month_sessions = MITSession.objects.filter(daily_checkin__date__year=today.year, daily_checkin__date__month=today.month)
+    month_sessions = MITSession.objects.filter(
+        daily_checkin__owner=request.user,
+        daily_checkin__date__year=today.year,
+        daily_checkin__date__month=today.month,
+    )
 
     summary = month_sessions.aggregate(
         total=Count("id"),
@@ -73,12 +103,13 @@ def home(request):
     total = summary["total"] or 0
     completed = summary["completed"] or 0
     completion_rate = round((completed / total) * 100, 1) if total else 0
-    current_streak = _current_streak()
+    current_streak = _current_streak(request.user)
 
-    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").order_by("-daily_checkin__date", "skill__name")[:9]
+    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").filter(daily_checkin__owner=request.user).order_by("-daily_checkin__date", "skill__name")[:9]
 
     trend_qs = (
-        MITSession.objects.annotate(month=TruncMonth("daily_checkin__date"))
+        MITSession.objects.filter(daily_checkin__owner=request.user)
+        .annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
         .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
         .order_by("month")
@@ -91,7 +122,7 @@ def home(request):
     category_labels = [r["skill__name"] or "(No skill)" for r in skill_qs]
     category_data = [r["count"] for r in skill_qs]
 
-    goals = Skill.objects.filter(is_active=True).order_by("name")
+    goals = Skill.objects.filter(owner=request.user, is_active=True).order_by("name")
     goal_progress = []
     for g in goals:
         actual = month_sessions.filter(skill=g).aggregate(v=Sum("actual_minutes"))["v"] or 0
@@ -116,31 +147,35 @@ def home(request):
     return render(request, "core/home.html", context)
 
 
+@login_required
 def checkin_create(request):
-    checkin = DailyCheckin()
+    checkin = DailyCheckin(owner=request.user)
 
     if request.method == "POST":
         form = DailyCheckinForm(request.POST, instance=checkin)
-        formset = MITSessionFormSet(request.POST, instance=checkin)
+        formset = MITSessionFormSet(request.POST, instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
         if form.is_valid() and formset.is_valid():
-            checkin = form.save()
+            checkin = form.save(commit=False)
+            checkin.owner = request.user
+            checkin.save()
             formset.instance = checkin
             formset.save()
             messages.success(request, "Daily MIT check-in saved.")
             return redirect("home")
     else:
         form = DailyCheckinForm(instance=checkin, initial={"date": date.today()})
-        formset = MITSessionFormSet(instance=checkin)
+        formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
 
     return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "create"})
 
 
+@login_required
 def checkin_edit(request, pk):
-    checkin = get_object_or_404(DailyCheckin, pk=pk)
+    checkin = get_object_or_404(DailyCheckin, pk=pk, owner=request.user)
 
     if request.method == "POST":
         form = DailyCheckinForm(request.POST, instance=checkin)
-        formset = MITSessionFormSet(request.POST, instance=checkin)
+        formset = MITSessionFormSet(request.POST, instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
@@ -148,18 +183,19 @@ def checkin_edit(request, pk):
             return redirect("checkin_detail", pk=checkin.pk)
     else:
         form = DailyCheckinForm(instance=checkin)
-        formset = MITSessionFormSet(instance=checkin)
+        formset = MITSessionFormSet(instance=checkin, form_kwargs={"user": request.user}, prefix="mits")
 
     return render(request, "core/checkin_form.html", {"form": form, "formset": formset, "mode": "edit", "checkin": checkin})
 
 
+@login_required
 def skill_manage(request):
     if request.method == "POST":
         action = request.POST.get("action", "create")
         if action == "delete":
             skill_id = request.POST.get("skill_id")
-            skill = get_object_or_404(Skill, pk=skill_id)
-            if skill.sessions.exists():
+            skill = get_object_or_404(Skill, pk=skill_id, owner=request.user)
+            if skill.sessions.filter(daily_checkin__owner=request.user).exists():
                 skill.is_active = False
                 skill.save(update_fields=["is_active"])
                 messages.info(request, f"{skill.name} has history, so it was deactivated instead of deleted.")
@@ -170,19 +206,22 @@ def skill_manage(request):
 
         form = SkillForm(request.POST)
         if form.is_valid():
-            form.save()
+            skill = form.save(commit=False)
+            skill.owner = request.user
+            skill.save()
             messages.success(request, "Skill saved.")
             return redirect("skill_manage")
     else:
         form = SkillForm()
 
-    skills = Skill.objects.all()
+    skills = Skill.objects.filter(owner=request.user)
     return render(request, "core/skill_manage.html", {"form": form, "skills": skills})
 
 
+@login_required
 def monthly_summary(request):
     month_str = request.GET.get("month", "")
-    sessions = MITSession.objects.select_related("daily_checkin", "skill")
+    sessions = MITSession.objects.select_related("daily_checkin", "skill").filter(daily_checkin__owner=request.user)
 
     if month_str:
         try:
@@ -215,6 +254,7 @@ def monthly_summary(request):
     return render(request, "core/monthly_summary.html", {"rows": rows, "selected_month": month_str})
 
 
+@login_required
 def checkin_detail(request, pk):
-    checkin = get_object_or_404(DailyCheckin.objects.prefetch_related("mits__skill"), pk=pk)
+    checkin = get_object_or_404(DailyCheckin.objects.prefetch_related("mits__skill"), pk=pk, owner=request.user)
     return render(request, "core/checkin_detail.html", {"checkin": checkin})

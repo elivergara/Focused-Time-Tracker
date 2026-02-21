@@ -10,20 +10,21 @@ class MITSessionInline(admin.TabularInline):
 
 @admin.register(DailyCheckin)
 class DailyCheckinAdmin(admin.ModelAdmin):
-    list_display = ("date", "created_at")
-    search_fields = ("date",)
+    list_display = ("owner", "date", "created_at")
+    search_fields = ("date", "owner__username")
+    list_filter = ("owner",)
     inlines = [MITSessionInline]
 
 
 @admin.register(MITSession)
 class MITSessionAdmin(admin.ModelAdmin):
     list_display = ("daily_checkin", "skill", "title", "planned_minutes", "actual_minutes", "status")
-    list_filter = ("status", "skill")
+    list_filter = ("status", "skill", "daily_checkin__owner")
     search_fields = ("title", "miss_reason")
 
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_active", "created_at")
-    list_filter = ("is_active",)
-    search_fields = ("name", "description")
+    list_display = ("owner", "name", "goal_minutes", "is_active", "created_at")
+    list_filter = ("owner", "is_active")
+    search_fields = ("name", "description", "owner__username")

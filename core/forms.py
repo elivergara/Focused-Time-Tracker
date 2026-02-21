@@ -1,7 +1,23 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.forms import BaseInlineFormSet, inlineformset_factory
 
 from .models import DailyCheckin, MITSession, Skill
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={"class": "form-control"}))
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update({"class": "form-control"})
+        self.fields["password1"].widget.attrs.update({"class": "form-control"})
+        self.fields["password2"].widget.attrs.update({"class": "form-control"})
 
 
 class DailyCheckinForm(forms.ModelForm):
@@ -40,8 +56,12 @@ class MITSessionForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        self.fields["skill"].queryset = Skill.objects.filter(is_active=True)
+        qs = Skill.objects.filter(is_active=True)
+        if user and user.is_authenticated:
+            qs = qs.filter(owner=user)
+        self.fields["skill"].queryset = qs
         self.fields["skill"].required = True
         self.fields["miss_reason"].required = False
 

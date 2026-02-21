@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.db import models
 
 
 class Skill(models.Model):
-    name = models.CharField(max_length=120, unique=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="skills", null=True, blank=True)
+    name = models.CharField(max_length=120)
     description = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     goal_minutes = models.PositiveIntegerField(default=120)
@@ -10,18 +12,25 @@ class Skill(models.Model):
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "name"], name="unique_skill_per_owner"),
+        ]
 
     def __str__(self):
         return self.name
 
 
 class DailyCheckin(models.Model):
-    date = models.DateField(unique=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="daily_checkins", null=True, blank=True)
+    date = models.DateField()
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "date"], name="unique_checkin_date_per_owner"),
+        ]
 
     def __str__(self):
         return f"Daily Check-in {self.date}"
