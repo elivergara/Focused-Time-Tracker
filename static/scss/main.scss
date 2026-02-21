@@ -71,3 +71,39 @@ body {
   margin-bottom: 0.65rem;
   font-size: 1.02rem;
 }
+
+.landing-shot {
+  height: 480px;
+  object-fit: cover;
+  filter: brightness(0.82);
+}
+
+.carousel-caption {
+  background: rgba(0, 0, 0, 0.38);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.sticky-cta-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1080;
+  background: linear-gradient(120deg, rgba(9, 16, 32, 0.94), rgba(14, 75, 142, 0.94));
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+body {
+  padding-bottom: 84px;
+}
+
+@media (max-width: 768px) {
+  .landing-shot {
+    height: 300px;
+  }
+  .sticky-cta-bar .container {
+    justify-content: center !important;
+  }
+}
