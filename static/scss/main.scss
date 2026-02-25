@@ -140,12 +140,29 @@ body {
   z-index: 5;
 }
 
-.dashboard-shell {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 1rem;
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-  padding: 1rem;
+.hero-title {
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  max-width: 56ch;
+  color: rgba(234, 241, 255, 0.92);
+  font-size: 1.03rem;
+}
+
+.metric-card {
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.metric-value {
+  letter-spacing: -0.02em;
+}
+
+.dashboard-surface {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .navbar .nav-link {
@@ -235,9 +252,6 @@ body {
   }
   .dashboard-main {
     margin-top: 0;
-  }
-  .dashboard-shell {
-    padding: 0.75rem;
   }
   .action-grid {
     grid-template-columns: 1fr;
