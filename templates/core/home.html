@@ -15,7 +15,7 @@
           <div class="action-grid">
             <a href="{% url 'checkin_create' %}" class="btn btn-primary action-btn action-btn-uniform"><i class="fa-solid fa-plus me-2"></i>Daily Focus Log</a>
             <a href="{% url 'focus_category_manage' %}" class="btn btn-warning text-dark action-btn action-btn-uniform"><i class="fa-solid fa-layer-group me-2"></i>Focus Categories</a>
-            <a href="{% url 'monthly_summary' %}" class="btn btn-dark action-btn action-btn-uniform"><i class="fa-solid fa-chart-line me-2"></i>Monttly Report</a>
+            <a href="{% url 'monthly_summary' %}" class="btn btn-dark action-btn action-btn-uniform"><i class="fa-solid fa-chart-line me-2"></i>Monthly Report</a>
           </div>
         </div>
 
@@ -38,6 +38,7 @@
 </header>
 
 <section class="container dashboard-main pb-4">
+  <div class="dashboard-shell">
   <div class="row g-3 mb-4 kpi-dashboard-row">
     <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-list-check me-1"></i>Total</small><strong>{{ summary.total|default:0 }}</strong></div></div>
     <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-circle-check me-1"></i>Completed</small><strong>{{ summary.completed|default:0 }}</strong></div></div>
@@ -103,6 +104,7 @@
     <tr><td colspan="6" class="text-center py-4">No Focus Sessions yet. Create your first daily log.</td></tr>
   {% endfor %}
   </tbody></table></div></div>
+  </div>
 </section>
 
 {{ trend_labels|json_script:"trend-labels" }}
