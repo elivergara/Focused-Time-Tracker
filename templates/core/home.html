@@ -53,10 +53,22 @@
     </div>
   </div>
 
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <h5 class="card-title"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Month-to-month tracking</h5>
-      <canvas id="monthTrendChart" height="90"></canvas>
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Month-to-month tracking</h5>
+          <canvas id="monthTrendChart" height="95"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fa-solid fa-gauge-high me-2 text-primary"></i>Monthly efficiency (%)</h5>
+          <canvas id="monthEfficiencyChart" height="95"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -117,7 +129,17 @@ const categoryCtx = document.getElementById('categoryChart');
 if (categoryCtx) new Chart(categoryCtx,{type:'doughnut',data:{labels:categoryLabels,datasets:[{data:categoryData,backgroundColor:['#0d6efd','#6610f2','#20c997','#fd7e14','#dc3545','#6c757d']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
 const monthTrendCtx = document.getElementById('monthTrendChart');
-if (monthTrendCtx) new Chart(monthTrendCtx,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Planned minutes',data:monthPlanned,backgroundColor:'rgba(13,110,253,.75)'},{label:'Actual minutes',data:monthActual,backgroundColor:'rgba(32,201,151,.75)'}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:false},y:{beginAtZero:true}}}});
+if (monthTrendCtx) new Chart(monthTrendCtx,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Planned minutes',data:monthPlanned,backgroundColor:'rgba(13,110,253,.75)',maxBarThickness:44,categoryPercentage:.62,barPercentage:.9},{label:'Actual minutes',data:monthActual,backgroundColor:'rgba(32,201,151,.75)',maxBarThickness:44,categoryPercentage:.62,barPercentage:.9}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:false},y:{beginAtZero:true}}}});
+
+const monthEfficiency = monthLabels.map((_, i) => {
+  const planned = Number(monthPlanned[i] || 0);
+  const actual = Number(monthActual[i] || 0);
+  if (!planned) return 0;
+  return Math.round((actual / planned) * 1000) / 10;
+});
+
+const monthEfficiencyCtx = document.getElementById('monthEfficiencyChart');
+if (monthEfficiencyCtx) new Chart(monthEfficiencyCtx,{type:'line',data:{labels:monthLabels,datasets:[{label:'Efficiency %',data:monthEfficiency,borderColor:'#6f42c1',backgroundColor:'rgba(111,66,193,.2)',fill:true,tension:.35,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:(v)=>`${v}%`}}}}});
 
 </script>
 {% endblock %}
