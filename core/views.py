@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
-from django.db.models.functions import TruncDate, TruncMonth
+from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -105,12 +105,11 @@ def home(request):
     recent_mits = MITSession.objects.select_related("daily_checkin", "skill").filter(daily_checkin__owner=request.user).order_by("-daily_checkin__date", "skill__name")[:9]
 
     daily_trend_qs = (
-        month_sessions.annotate(day=TruncDate("daily_checkin__date"))
-        .values("day")
+        month_sessions.values("daily_checkin__date")
         .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
-        .order_by("day")
+        .order_by("daily_checkin__date")
     )
-    trend_labels = [r["day"].strftime("%b %d") for r in daily_trend_qs]
+    trend_labels = [r["daily_checkin__date"].strftime("%b %d") for r in daily_trend_qs]
     trend_planned = [r["planned"] or 0 for r in daily_trend_qs]
     trend_actual = [r["actual"] or 0 for r in daily_trend_qs]
 
