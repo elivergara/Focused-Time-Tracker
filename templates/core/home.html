@@ -19,12 +19,6 @@
           </div>
         </div>
 
-        <div class="row g-2 kpi-row">
-          <div class="col-6 col-md-3"><div class="kpi-chip"><small><i class="fa-solid fa-list-check me-1"></i>Total</small><strong>{{ summary.total|default:0 }}</strong></div></div>
-          <div class="col-6 col-md-3"><div class="kpi-chip"><small><i class="fa-solid fa-circle-check me-1"></i>Completed</small><strong>{{ summary.completed|default:0 }}</strong></div></div>
-          <div class="col-6 col-md-3"><div class="kpi-chip"><small><i class="fa-solid fa-percent me-1"></i>Completion</small><strong>{{ completion_rate }}%</strong></div></div>
-          <div class="col-6 col-md-3"><div class="kpi-chip"><small><i class="fa-solid fa-fire me-1"></i>Streak</small><strong>{{ current_streak }}d</strong></div></div>
-        </div>
       </div>
 
       <div class="col-lg-5">
@@ -44,6 +38,13 @@
 </header>
 
 <section class="container dashboard-main pb-4">
+  <div class="row g-3 mb-4 kpi-dashboard-row">
+    <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-list-check me-1"></i>Total</small><strong>{{ summary.total|default:0 }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-circle-check me-1"></i>Completed</small><strong>{{ summary.completed|default:0 }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-percent me-1"></i>Completion</small><strong>{{ completion_rate }}%</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-chip kpi-chip-light"><small><i class="fa-solid fa-fire me-1"></i>Streak</small><strong>{{ current_streak }}d</strong></div></div>
+  </div>
+
   <div class="row g-3 mb-4">
     <div class="col-lg-8">
       <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Daily time trend (this month)</h5><canvas id="trendChart" height="110"></canvas></div></div>
