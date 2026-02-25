@@ -64,9 +64,13 @@
     </div>
     <div class="col-lg-4">
       <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fa-solid fa-gauge-high me-2 text-primary"></i>Monthly efficiency (%)</h5>
-          <canvas id="monthEfficiencyChart" height="95"></canvas>
+        <div class="card-body text-center">
+          <h5 class="card-title text-start"><i class="fa-solid fa-gauge-high me-2 text-primary"></i>Monthly efficiency (%)</h5>
+          <canvas id="monthEfficiencyGauge" height="120"></canvas>
+          <div class="mt-2">
+            <div id="monthEfficiencyValue" class="fw-bold fs-4">0%</div>
+            <small class="text-muted">Actual vs planned minutes</small>
+          </div>
         </div>
       </div>
     </div>
@@ -138,8 +142,32 @@ const monthEfficiency = monthLabels.map((_, i) => {
   return Math.round((actual / planned) * 1000) / 10;
 });
 
-const monthEfficiencyCtx = document.getElementById('monthEfficiencyChart');
-if (monthEfficiencyCtx) new Chart(monthEfficiencyCtx,{type:'line',data:{labels:monthLabels,datasets:[{label:'Efficiency %',data:monthEfficiency,borderColor:'#6f42c1',backgroundColor:'rgba(111,66,193,.2)',fill:true,tension:.35,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:(v)=>`${v}%`}}}}});
+const currentEfficiency = monthEfficiency.length ? monthEfficiency[monthEfficiency.length - 1] : 0;
+const gaugeValueEl = document.getElementById('monthEfficiencyValue');
+if (gaugeValueEl) gaugeValueEl.textContent = `${currentEfficiency}%`;
+
+const monthEfficiencyGaugeCtx = document.getElementById('monthEfficiencyGauge');
+if (monthEfficiencyGaugeCtx) {
+  const capped = Math.max(0, Math.min(100, currentEfficiency));
+  new Chart(monthEfficiencyGaugeCtx,{
+    type:'doughnut',
+    data:{
+      labels:['Efficiency','Remaining'],
+      datasets:[{
+        data:[capped,100-capped],
+        backgroundColor:['rgba(111,66,193,.9)','rgba(108,117,125,.18)'],
+        borderWidth:0,
+        cutout:'72%'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      rotation:-90,
+      circumference:180
+    }
+  });
+}
 
 </script>
 {% endblock %}
