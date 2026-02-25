@@ -103,7 +103,5 @@ if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:
 const categoryCtx = document.getElementById('categoryChart');
 if (categoryCtx) new Chart(categoryCtx,{type:'doughnut',data:{labels:categoryLabels,datasets:[{data:categoryData,backgroundColor:['#0d6efd','#6610f2','#20c997','#fd7e14','#dc3545','#6c757d']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
-const hero=document.getElementById('heroSection');
-if(hero){window.addEventListener('mousemove',(e)=>{const x=(e.clientX/window.innerWidth-.5)*8;const y=(e.clientY/window.innerHeight-.5)*8;hero.style.backgroundPosition=`${50+x}% ${50+y}%`;});}
 </script>
 {% endblock %}
