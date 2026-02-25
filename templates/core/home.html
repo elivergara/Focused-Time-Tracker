@@ -46,10 +46,17 @@
 <section class="container dashboard-main pb-4">
   <div class="row g-3 mb-4">
     <div class="col-lg-8">
-      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Monthly time trend</h5><canvas id="trendChart" height="110"></canvas></div></div>
+      <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Daily time trend (this month)</h5><canvas id="trendChart" height="110"></canvas></div></div>
     </div>
     <div class="col-lg-4">
       <div class="card shadow-sm h-100"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Focus Category Mix (this month)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Month-to-month tracking</h5>
+      <canvas id="monthTrendChart" height="90"></canvas>
     </div>
   </div>
 
@@ -86,6 +93,9 @@
 {{ trend_actual|json_script:"trend-actual" }}
 {{ category_labels|json_script:"category-labels" }}
 {{ category_data|json_script:"category-data" }}
+{{ month_labels|json_script:"month-labels" }}
+{{ month_planned|json_script:"month-planned" }}
+{{ month_actual|json_script:"month-actual" }}
 {% endblock %}
 
 {% block extra_js %}
@@ -96,12 +106,18 @@ const trendPlanned = JSON.parse(document.getElementById('trend-planned').textCon
 const trendActual = JSON.parse(document.getElementById('trend-actual').textContent);
 const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
 const categoryData = JSON.parse(document.getElementById('category-data').textContent);
+const monthLabels = JSON.parse(document.getElementById('month-labels').textContent);
+const monthPlanned = JSON.parse(document.getElementById('month-planned').textContent);
+const monthActual = JSON.parse(document.getElementById('month-actual').textContent);
 
 const trendCtx = document.getElementById('trendChart');
-if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:[{label:'Planned minutes',data:trendPlanned,borderColor:'#0d6efd',backgroundColor:'rgba(13,110,253,.2)',tension:.35,fill:true},{label:'Actual minutes',data:trendActual,borderColor:'#20c997',backgroundColor:'rgba(32,201,151,.2)',tension:.35,fill:true}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:[{label:'Planned minutes',data:trendPlanned,borderColor:'#0d6efd',backgroundColor:'rgba(13,110,253,.2)',tension:.35,fill:true,pointRadius:4,pointHoverRadius:6},{label:'Actual minutes',data:trendActual,borderColor:'#20c997',backgroundColor:'rgba(32,201,151,.2)',tension:.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
 const categoryCtx = document.getElementById('categoryChart');
 if (categoryCtx) new Chart(categoryCtx,{type:'doughnut',data:{labels:categoryLabels,datasets:[{data:categoryData,backgroundColor:['#0d6efd','#6610f2','#20c997','#fd7e14','#dc3545','#6c757d']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+
+const monthTrendCtx = document.getElementById('monthTrendChart');
+if (monthTrendCtx) new Chart(monthTrendCtx,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Planned minutes',data:monthPlanned,backgroundColor:'rgba(13,110,253,.75)'},{label:'Actual minutes',data:monthActual,backgroundColor:'rgba(32,201,151,.75)'}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:false},y:{beginAtZero:true}}}});
 
 </script>
 {% endblock %}

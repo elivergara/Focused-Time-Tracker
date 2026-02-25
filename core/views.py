@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -104,16 +104,26 @@ def home(request):
 
     recent_mits = MITSession.objects.select_related("daily_checkin", "skill").filter(daily_checkin__owner=request.user).order_by("-daily_checkin__date", "skill__name")[:9]
 
-    trend_qs = (
+    daily_trend_qs = (
+        month_sessions.annotate(day=TruncDate("daily_checkin__date"))
+        .values("day")
+        .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
+        .order_by("day")
+    )
+    trend_labels = [r["day"].strftime("%b %d") for r in daily_trend_qs]
+    trend_planned = [r["planned"] or 0 for r in daily_trend_qs]
+    trend_actual = [r["actual"] or 0 for r in daily_trend_qs]
+
+    monthly_trend_qs = (
         MITSession.objects.filter(daily_checkin__owner=request.user)
         .annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
         .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
         .order_by("month")
     )
-    trend_labels = [r["month"].strftime("%b %Y") for r in trend_qs]
-    trend_planned = [r["planned"] or 0 for r in trend_qs]
-    trend_actual = [r["actual"] or 0 for r in trend_qs]
+    month_labels = [r["month"].strftime("%b %Y") for r in monthly_trend_qs]
+    month_planned = [r["planned"] or 0 for r in monthly_trend_qs]
+    month_actual = [r["actual"] or 0 for r in monthly_trend_qs]
 
     skill_qs = month_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
     category_labels = [r["skill__name"] or "(No category)" for r in skill_qs]
@@ -138,6 +148,9 @@ def home(request):
         "trend_actual": trend_actual,
         "category_labels": category_labels,
         "category_data": category_data,
+        "month_labels": month_labels,
+        "month_planned": month_planned,
+        "month_actual": month_actual,
         "monthly_narrative": _monthly_narrative(month_sessions, completion_rate),
         "goal_progress": goal_progress,
     }
