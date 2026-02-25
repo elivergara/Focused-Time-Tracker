@@ -73,7 +73,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Account created. Welcome to Focus Performance Tracker.")
+            messages.success(request, "Account created. Welcome to Focused Time Tracker.")
             return redirect("home")
     else:
         form = SignUpForm()
@@ -127,7 +127,7 @@ def home(request):
         goal_progress.append({"name": g.name, "goal": g.goal_minutes, "actual": actual, "pct": pct})
 
     context = {
-        "app_name": "Focus Performance Tracker",
+        "app_name": "Focused Time Tracker",
         "subtitle": "Track focused time with clarity, consistency, and momentum.",
         "summary": summary,
         "recent_mits": recent_mits,

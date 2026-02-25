@@ -1,8 +1,8 @@
-# Focus Performance Tracker
+# Focused Time Tracker
 
 A professional Django web app for tracking focused work sessions, accountability, and monthly performance trends.
 
-Focus Performance Tracker helps users:
+Focused Time Tracker helps users:
 - define and manage their own **Focus Categories**
 - log daily **Focus Sessions** with planned vs actual minutes
 - track completion status and miss reasons
@@ -17,7 +17,7 @@ Focus Performance Tracker helps users:
 
 ## Setup
 ```bash
-cd ~/Django/MIT
+cd ~/Django/FTT
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
