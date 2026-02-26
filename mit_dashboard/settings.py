@@ -26,9 +26,11 @@ SECRET_KEY = 'django-insecure-(ezn6$@@*9mvi*uy@we860d-=@ib8u4v9igtuav*h=vv-f!ndo
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "ftt.elivergara.net",
-    "www.ftt.elivergara.net",
-    "193.43.134.32"
+    'ftt.elivergara.net',
+    'www.ftt.elivergara.net',
+    '193.43.134.32',
+    '127.0.0.1',   # 👈 THIS
+    'localhost'    # 👈 and this
 ]
 
 
