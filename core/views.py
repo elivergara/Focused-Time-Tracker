@@ -38,7 +38,7 @@ def _current_streak(user):
 
 def _monthly_narrative(month_sessions, completion_rate):
     if not month_sessions.exists():
-        return "No MITs logged this month yet. Start with one focused check-in today."
+        return "No Focused sessions logged this month yet. Start with one focused check-in today."
 
     skill_minutes = (
         month_sessions.values("skill__name")
@@ -51,9 +51,9 @@ def _monthly_narrative(month_sessions, completion_rate):
     if completion_rate >= 80:
         tone = "Strong consistency this month. Keep the same cadence."
     elif completion_rate >= 60:
-        tone = "Good momentum. Tighten follow-through on skipped MITs."
+        tone = "Good momentum. Tighten follow-through on skipped Focused Sessions."
     else:
-        tone = "Execution is below target. Simplify tomorrow’s first MIT and protect the first block."
+        tone = "Execution is below target. Simplify tomorrow’s first Focused session and protect the first block."
 
     return f"{lead} {tone}"
 
