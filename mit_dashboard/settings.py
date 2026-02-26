@@ -121,15 +121,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-#STATIC_URL = 'static/'
+
+
+import os
+
+# Where Django LOOKS for your CSS/JS while you're coding
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'), 
+]
+
+# Where 'collectstatic' COPIES everything for the server
+# Make sure this is NOT the same as the folder above
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# The URL prefix for the browser
 STATIC_URL = '/static/'
 
-# STATICFILES_DIRS = [BASE_DIR / 'static']
-import os
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-STATIC_ROOT = '/var/www/ftt/static/'
+
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/app/'
