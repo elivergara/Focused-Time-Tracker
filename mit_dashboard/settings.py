@@ -132,7 +132,8 @@ STATICFILES_DIRS = [
 
 # Where 'collectstatic' COPIES everything for the server
 # Make sure this is NOT the same as the folder above
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
 
 # The URL prefix for the browser
 STATIC_URL = '/static/'
