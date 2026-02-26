@@ -10,4 +10,6 @@ urlpatterns = [
     path("focus-categories/", views.focus_category_manage, name="focus_category_manage"),
     path("skills/", views.focus_category_manage, name="skill_manage"),
     path("summary/monthly/", views.monthly_summary, name="monthly_summary"),
+    path('manifest.json', TemplateView.as_view(template_name='manifest.json', content_type='application/json')),
+    path('serviceworker.js', TemplateView.as_view(template_name='serviceworker.js', content_type='application/javascript')),
 ]
