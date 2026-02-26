@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-(ezn6$@@*9mvi*uy@we860d-=@ib8u4v9igtuav*h=vv-f!ndo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "ftt.elivergara.net",
+    "www.ftt.elivergara.net",
+    "193.43.134.32"
+]
 
 
 # Application definition
