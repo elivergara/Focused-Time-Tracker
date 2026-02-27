@@ -84,16 +84,31 @@ def signup(request):
 @login_required
 def home(request):
     today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+
+    week_sessions = MITSession.objects.filter(
+        daily_checkin__owner=request.user,
+        daily_checkin__date__range=(week_start, week_end),
+    )
+
     month_sessions = MITSession.objects.filter(
         daily_checkin__owner=request.user,
         daily_checkin__date__year=today.year,
         daily_checkin__date__month=today.month,
     )
 
-    summary = month_sessions.aggregate(
+    monthly_completion_summary = month_sessions.aggregate(
         total=Count("id"),
         completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)),
-        planned_minutes=Sum("planned_minutes"),
+    )
+    month_total = monthly_completion_summary["total"] or 0
+    month_completed = monthly_completion_summary["completed"] or 0
+    monthly_completion_rate = round((month_completed / month_total) * 100, 1) if month_total else 0
+
+    summary = week_sessions.aggregate(
+        total=Count("id"),
+        completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)),
         actual_minutes=Sum("actual_minutes"),
     )
 
@@ -102,38 +117,45 @@ def home(request):
     completion_rate = round((completed / total) * 100, 1) if total else 0
     current_streak = _current_streak(request.user)
 
-    recent_mits = MITSession.objects.select_related("daily_checkin", "skill").filter(daily_checkin__owner=request.user).order_by("-daily_checkin__date", "skill__name")[:9]
+    recent_mits = (
+        MITSession.objects.select_related("daily_checkin", "skill")
+        .filter(daily_checkin__owner=request.user)
+        .order_by("-daily_checkin__date", "skill__name")[:9]
+    )
 
     daily_trend_qs = (
-        month_sessions.values("daily_checkin__date")
-        .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
+        week_sessions.values("daily_checkin__date")
+        .annotate(actual=Sum("actual_minutes"))
         .order_by("daily_checkin__date")
     )
-    trend_labels = [r["daily_checkin__date"].strftime("%b %d") for r in daily_trend_qs]
-    trend_planned = [r["planned"] or 0 for r in daily_trend_qs]
-    trend_actual = [r["actual"] or 0 for r in daily_trend_qs]
+    daily_map = {r["daily_checkin__date"]: r["actual"] or 0 for r in daily_trend_qs}
+    trend_labels, trend_actual = [], []
+    for offset in range(7):
+        day = week_start + timedelta(days=offset)
+        trend_labels.append(day.strftime("%a %d"))
+        trend_actual.append(daily_map.get(day, 0))
 
     monthly_trend_qs = (
         MITSession.objects.filter(daily_checkin__owner=request.user)
         .annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
-        .annotate(planned=Sum("planned_minutes"), actual=Sum("actual_minutes"))
+        .annotate(actual=Sum("actual_minutes"))
         .order_by("month")
     )
     month_labels = [r["month"].strftime("%b %Y") for r in monthly_trend_qs]
-    month_planned = [r["planned"] or 0 for r in monthly_trend_qs]
     month_actual = [r["actual"] or 0 for r in monthly_trend_qs]
 
-    skill_qs = month_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
+    skill_qs = week_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
     category_labels = [r["skill__name"] or "(No category)" for r in skill_qs]
     category_data = [r["count"] for r in skill_qs]
 
     goals = Skill.objects.filter(owner=request.user, is_active=True).order_by("name")
     goal_progress = []
     for g in goals:
-        actual = month_sessions.filter(skill=g).aggregate(v=Sum("actual_minutes"))["v"] or 0
-        pct = round((actual / g.goal_minutes) * 100, 1) if g.goal_minutes else 0
-        goal_progress.append({"name": g.name, "goal": g.goal_minutes, "actual": actual, "pct": pct})
+        actual = week_sessions.filter(skill=g).aggregate(v=Sum("actual_minutes"))["v"] or 0
+        target = g.weekly_goal_minutes or 0
+        pct = round((actual / target) * 100, 1) if target else 0
+        goal_progress.append({"name": g.name, "goal": target, "actual": actual, "pct": pct})
 
     context = {
         "app_name": "Focused Time Tracker",
@@ -143,15 +165,14 @@ def home(request):
         "completion_rate": completion_rate,
         "current_streak": current_streak,
         "trend_labels": trend_labels,
-        "trend_planned": trend_planned,
         "trend_actual": trend_actual,
         "category_labels": category_labels,
         "category_data": category_data,
         "month_labels": month_labels,
-        "month_planned": month_planned,
         "month_actual": month_actual,
-        "monthly_narrative": _monthly_narrative(month_sessions, completion_rate),
+        "monthly_narrative": _monthly_narrative(month_sessions, monthly_completion_rate),
         "goal_progress": goal_progress,
+        "week_range_label": f"{week_start:%b %d} – {week_end:%b %d}",
     }
     return render(request, "core/home.html", context)
 

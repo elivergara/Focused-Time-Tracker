@@ -14,7 +14,7 @@
         <div class="action-panel mb-3">
           <div class="action-grid">
             <a href="{% url 'checkin_create' %}" class="btn btn-success action-btn action-btn-uniform"><i class="fa-solid fa-plus me-2"></i>Enter Session</a>
-            <a href="{% url 'focus_category_manage' %}" class="btn btn-warning text-dark action-btn action-btn-uniform"><i class="fa-solid fa-layer-group me-2"></i>Focus Categories</a>
+            <a href="{% url 'focus_category_manage' %}" class="btn btn-warning text-dark action-btn action-btn-uniform"><i class="fa-solid fa-layer-group me-2"></i>Manage Categories</a>
             <a href="{% url 'monthly_summary' %}" class="btn btn-dark action-btn action-btn-uniform"><i class="fa-solid fa-chart-line me-2"></i>Monthly Report</a>
           </div>
         </div>
@@ -24,12 +24,12 @@
       <div class="col-lg-5">
         <div class="card glass-card border-0 shadow-lg status-card">
           <div class="card-body p-4">
-            <h5 class="card-title fw-semibold mb-3"><i class="fa-solid fa-calendar-days me-2"></i>This month</h5>
+            <h5 class="card-title fw-semibold mb-3"><i class="fa-solid fa-calendar-days me-2"></i>This week ({{ week_range_label }})</h5>
             <ul class="list-unstyled mb-3 fs-6">
-              <li class="mb-2">Planned minutes: <strong>{{ summary.planned_minutes|default:0 }}</strong></li>
-              <li class="mb-2">Actual minutes: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
+              <li class="mb-2">Minutes logged: <strong>{{ summary.actual_minutes|default:0 }}</strong></li>
+              <li class="mb-2">Sessions completed: <strong>{{ summary.completed|default:0 }}</strong> of <strong>{{ summary.total|default:0 }}</strong></li>
             </ul>
-            <div class="small text-muted">{{ monthly_narrative }}</div>
+            <div class="small text-muted">Monthly snapshot: {{ monthly_narrative }}</div>
           </div>
         </div>
       </div>
@@ -75,45 +75,13 @@
         </div>
       </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm h-100 dashboard-surface"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Daily time trend (this month)</h5><canvas id="trendChart" height="110"></canvas></div></div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card shadow-sm h-100 dashboard-surface"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Focus Category Mix (this month)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm h-100 dashboard-surface">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Month-to-month tracking</h5>
-          <canvas id="monthTrendChart" height="95"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card shadow-sm h-100 dashboard-surface">
-        <div class="card-body text-center">
-          <h5 class="card-title text-start"><i class="fa-solid fa-gauge-high me-2 text-primary"></i>Monthly efficiency (%)</h5>
-          <canvas id="monthEfficiencyGauge" height="120"></canvas>
-          <div class="mt-2">
-            <div id="monthEfficiencyValue" class="fw-bold fs-4">0%</div>
-            <small class="text-muted">Actual vs planned minutes</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="card shadow-sm mb-4 dashboard-surface">
     <div class="card-body">
-      <h5 class="card-title"><i class="fa-solid fa-bullseye me-2 text-primary"></i>Focus Category Goals (this month)</h5>
+      <h5 class="card-title"><i class="fa-solid fa-bullseye me-2 text-primary"></i>Focus Category Minutes (this week)</h5>
       {% if goal_progress %}
         {% for g in goal_progress %}
           <div class="mb-2">
-            <div class="d-flex justify-content-between small"><span>{{ g.name }}</span><span>{{ g.actual }}/{{ g.goal }} min</span></div>
+            <div class="d-flex justify-content-between small"><span>{{ g.name }}</span><span>{{ g.actual }} / {{ g.goal }} min</span></div>
             <div class="progress" role="progressbar" aria-valuenow="{{ g.pct }}" aria-valuemin="0" aria-valuemax="100">
               <div class="progress-bar" style="width: {% if g.pct > 100 %}100{% else %}{{ g.pct }}{% endif %}%;"></div>
             </div>
@@ -125,12 +93,36 @@
     </div>
   </div>
 
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100 dashboard-surface"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Daily time trend (this week)</h5><canvas id="trendChart" height="110"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100 dashboard-surface"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Focus Category Mix (this week)</h5><canvas id="categoryChart" height="110"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm h-100 dashboard-surface">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Monthly minutes logged</h5>
+          <canvas id="monthTrendChart" height="95"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent Focus Sessions</h3></div>
-  <div class="card shadow-sm dashboard-surface"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Task</th><th>Planned</th><th>Actual</th><th>Status</th></tr></thead><tbody>
+  <div class="card shadow-sm dashboard-surface"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Minutes</th></tr></thead><tbody>
   {% for mit in recent_mits %}
-    <tr><td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td><td>{{ mit.skill.name|default:'(No category)' }}</td><td>{{ mit.title }}</td><td>{{ mit.planned_minutes }}m</td><td>{% if mit.actual_minutes %}{{ mit.actual_minutes }}m{% else %}-{% endif %}</td><td><span class="badge text-bg-secondary">{{ mit.get_status_display }}</span></td></tr>
+    <tr>
+      <td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td>
+      <td>{{ mit.skill.name|default:'(No category)' }}</td>
+      <td>{{ mit.actual_minutes|default:0 }}m</td>
+    </tr>
   {% empty %}
-    <tr><td colspan="6" class="text-center py-4">No Focus Sessions yet. Create your first daily log.</td></tr>
+    <tr><td colspan="3" class="text-center py-4">No Focus Sessions yet. Create your first daily log.</td></tr>
   {% endfor %}
   </tbody></table></div></div>
     </div>
@@ -138,12 +130,10 @@
 </section>
 
 {{ trend_labels|json_script:"trend-labels" }}
-{{ trend_planned|json_script:"trend-planned" }}
 {{ trend_actual|json_script:"trend-actual" }}
 {{ category_labels|json_script:"category-labels" }}
 {{ category_data|json_script:"category-data" }}
 {{ month_labels|json_script:"month-labels" }}
-{{ month_planned|json_script:"month-planned" }}
 {{ month_actual|json_script:"month-actual" }}
 {% endblock %}
 
@@ -151,56 +141,19 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <script>
 const trendLabels = JSON.parse(document.getElementById('trend-labels').textContent);
-const trendPlanned = JSON.parse(document.getElementById('trend-planned').textContent);
 const trendActual = JSON.parse(document.getElementById('trend-actual').textContent);
 const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
 const categoryData = JSON.parse(document.getElementById('category-data').textContent);
 const monthLabels = JSON.parse(document.getElementById('month-labels').textContent);
-const monthPlanned = JSON.parse(document.getElementById('month-planned').textContent);
 const monthActual = JSON.parse(document.getElementById('month-actual').textContent);
 
 const trendCtx = document.getElementById('trendChart');
-if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:[{label:'Planned minutes',data:trendPlanned,borderColor:'#0d6efd',backgroundColor:'rgba(13,110,253,.2)',tension:.35,fill:true,pointRadius:4,pointHoverRadius:6},{label:'Actual minutes',data:trendActual,borderColor:'#20c997',backgroundColor:'rgba(32,201,151,.2)',tension:.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+if (trendCtx) new Chart(trendCtx,{type:'line',data:{labels:trendLabels,datasets:[{label:'Minutes logged',data:trendActual,borderColor:'#0d6efd',backgroundColor:'rgba(13,110,253,.2)',tension:.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}}}});
 
 const categoryCtx = document.getElementById('categoryChart');
 if (categoryCtx) new Chart(categoryCtx,{type:'doughnut',data:{labels:categoryLabels,datasets:[{data:categoryData,backgroundColor:['#0d6efd','#6610f2','#20c997','#fd7e14','#dc3545','#6c757d']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
 
 const monthTrendCtx = document.getElementById('monthTrendChart');
-if (monthTrendCtx) new Chart(monthTrendCtx,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Planned minutes',data:monthPlanned,backgroundColor:'rgba(13,110,253,.75)',maxBarThickness:44,categoryPercentage:.62,barPercentage:.9},{label:'Actual minutes',data:monthActual,backgroundColor:'rgba(32,201,151,.75)',maxBarThickness:44,categoryPercentage:.62,barPercentage:.9}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:false},y:{beginAtZero:true}}}});
-
-const monthEfficiency = monthLabels.map((_, i) => {
-  const planned = Number(monthPlanned[i] || 0);
-  const actual = Number(monthActual[i] || 0);
-  if (!planned) return 0;
-  return Math.round((actual / planned) * 1000) / 10;
-});
-
-const currentEfficiency = monthEfficiency.length ? monthEfficiency[monthEfficiency.length - 1] : 0;
-const gaugeValueEl = document.getElementById('monthEfficiencyValue');
-if (gaugeValueEl) gaugeValueEl.textContent = `${currentEfficiency}%`;
-
-const monthEfficiencyGaugeCtx = document.getElementById('monthEfficiencyGauge');
-if (monthEfficiencyGaugeCtx) {
-  const capped = Math.max(0, Math.min(100, currentEfficiency));
-  new Chart(monthEfficiencyGaugeCtx,{
-    type:'doughnut',
-    data:{
-      labels:['Efficiency','Remaining'],
-      datasets:[{
-        data:[capped,100-capped],
-        backgroundColor:['rgba(111,66,193,.9)','rgba(108,117,125,.18)'],
-        borderWidth:0,
-        cutout:'72%'
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false},tooltip:{enabled:false}},
-      rotation:-90,
-      circumference:180
-    }
-  });
-}
-
+if (monthTrendCtx) new Chart(monthTrendCtx,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Minutes logged',data:monthActual,backgroundColor:'rgba(32,201,151,.75)',maxBarThickness:44,categoryPercentage:.62,barPercentage:.9}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{stacked:false},y:{beginAtZero:true}}}});
 </script>
 {% endblock %}

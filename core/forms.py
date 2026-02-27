@@ -33,26 +33,24 @@ class DailyCheckinForm(forms.ModelForm):
 class FocusCategoryForm(forms.ModelForm):
     class Meta:
         model = Skill
-        fields = ["name", "description", "goal_minutes", "is_active"]
+        fields = ["name", "description", "weekly_goal_minutes", "is_active"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Autodesk Fusion"}),
             "description": forms.TextInput(attrs={"class": "form-control", "placeholder": "Optional short description"}),
-            "goal_minutes": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+            "weekly_goal_minutes": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
 
 class MITSessionForm(forms.ModelForm):
+    completed = forms.BooleanField(label="Completed", required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"}))
+
     class Meta:
         model = MITSession
-        fields = ["skill", "title", "planned_minutes", "actual_minutes", "status", "miss_reason"]
+        fields = ["skill", "actual_minutes"]
         widgets = {
             "skill": forms.Select(attrs={"class": "form-select"}),
-            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "What will you do?"}),
-            "planned_minutes": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
-            "actual_minutes": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
-            "status": forms.Select(attrs={"class": "form-select"}),
-            "miss_reason": forms.TextInput(attrs={"class": "form-control", "placeholder": "If skipped, why?"}),
+            "actual_minutes": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -63,7 +61,30 @@ class MITSessionForm(forms.ModelForm):
             qs = qs.filter(owner=user)
         self.fields["skill"].queryset = qs
         self.fields["skill"].required = True
-        self.fields["miss_reason"].required = False
+        self.fields["actual_minutes"].label = "Minutes"
+        self.fields["actual_minutes"].required = True
+        self.fields["actual_minutes"].widget.attrs.update({"min": 1})
+        self.fields["completed"].initial = self.instance.status == MITSession.Status.COMPLETED if self.instance.pk else False
+
+    def clean_actual_minutes(self):
+        minutes = self.cleaned_data.get("actual_minutes")
+        if not minutes or minutes <= 0:
+            raise forms.ValidationError("Log at least 1 minute.")
+        return minutes
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        minutes = self.cleaned_data.get("actual_minutes") or 0
+        completed = self.cleaned_data.get("completed")
+        instance.actual_minutes = minutes
+        instance.planned_minutes = minutes
+        instance.status = MITSession.Status.COMPLETED if completed else MITSession.Status.PLANNED
+        if not instance.title:
+            skill = self.cleaned_data.get("skill") or instance.skill
+            instance.title = skill.name if skill else "Focus Session"
+        if commit:
+            instance.save()
+        return instance
 
 
 class BaseMITSessionInlineFormSet(BaseInlineFormSet):
@@ -75,13 +96,12 @@ class BaseMITSessionInlineFormSet(BaseInlineFormSet):
 
         for form in valid_forms:
             skill = form.cleaned_data.get("skill")
-            status = form.cleaned_data.get("status")
-            miss_reason = (form.cleaned_data.get("miss_reason") or "").strip()
+            minutes = form.cleaned_data.get("actual_minutes")
 
             if not skill:
                 raise forms.ValidationError("Choose a focus category for each Focus Session.")
-            if status == MITSession.Status.SKIPPED and not miss_reason:
-                raise forms.ValidationError("Add a miss reason for any skipped MIT.")
+            if not minutes or minutes <= 0:
+                raise forms.ValidationError("Log at least 1 minute for every Focus Session.")
 
 
 MITSessionFormSet = inlineformset_factory(

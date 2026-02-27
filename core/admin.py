@@ -25,6 +25,6 @@ class MITSessionAdmin(admin.ModelAdmin):
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ("owner", "name", "goal_minutes", "is_active", "created_at")
+    list_display = ("owner", "name", "weekly_goal_minutes", "is_active", "created_at")
     list_filter = ("owner", "is_active")
     search_fields = ("name", "description", "owner__username")

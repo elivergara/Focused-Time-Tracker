@@ -5,8 +5,12 @@
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-11">
-      <h2 class="mb-3">Daily Focus Log</h2>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <a href="{% url 'home' %}" class="btn btn-dark text-white" style="background-color:#000;border-color:#000;">Home</a>
+        <h2 class="mb-0">Daily Focus Log</h2>
+      </div>
       <p class="text-muted">Use one daily focus log per date. Add as many Focus Sessions (1–8) as you need.</p>
+      <p class="small text-muted mb-3">Tip: If you add a session by accident, click <strong>Remove</strong> on that row (and <strong>Undo</strong> if you change your mind).</p>
       <p class="small {% if has_existing %}text-success{% else %}text-muted{% endif %} mb-3">
         {% if has_existing %}
           You have <strong>{{ logged_count }}</strong> Focus Session{{ logged_count|pluralize }} logged for this date. You can update them below.
@@ -33,34 +37,28 @@
             <div class="border rounded p-3 mb-3 mit-row">
               {{ mit_form.id }}
               <div class="row g-3 align-items-end">
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-4 col-md-6">
                   <label class="form-label">Focus Category</label>
                   {{ mit_form.skill }}
                 </div>
-                <div class="col-lg-3 col-md-6">
-                  <label class="form-label">Task</label>
-                  {{ mit_form.title }}
-                </div>
-                <div class="col-lg-1 col-md-3 col-6">
-                  <label class="form-label">Plan</label>
-                  {{ mit_form.planned_minutes }}
-                </div>
-                <div class="col-lg-1 col-md-3 col-6">
-                  <label class="form-label">Actual</label>
+                <div class="col-lg-3 col-md-3 col-6">
+                  <label class="form-label">Minutes</label>
                   {{ mit_form.actual_minutes }}
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                  <label class="form-label">Status</label>
-                  {{ mit_form.status }}
+                <div class="col-lg-3 col-md-3 col-6">
+                  <div class="form-check mt-4">
+                    {{ mit_form.completed }}
+                    <label class="form-check-label" for="{{ mit_form.completed.id_for_label }}">Completed</label>
+                  </div>
                 </div>
-                <div class="col-lg-2 col-md-8 col-12">
-                  <label class="form-label">Miss reason</label>
-                  {{ mit_form.miss_reason }}
-                </div>
-                <div class="col-lg-1 col-md-12 col-12">
+                <div class="col-lg-2 col-md-12 col-12">
                   <label class="form-label d-block">Remove</label>
                   {% if mit_form.DELETE %}
-                    <div class="form-check">{{ mit_form.DELETE }}</div>
+                    <div class="d-flex flex-column gap-2">
+                      <div class="d-none delete-checkbox-holder">{{ mit_form.DELETE }}</div>
+                      <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">Remove</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary restore-row-btn d-none">Undo</button>
+                    </div>
                   {% endif %}
                 </div>
               </div>
@@ -71,8 +69,7 @@
         <div class="d-flex gap-2 flex-wrap">
           <button class="btn btn-outline-primary" type="button" id="add-mit-btn"><i class="fa-solid fa-plus me-2"></i>Add another Focus Session</button>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk me-2"></i>Save Daily Log</button>
-          <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back</a>
-          <a href="{% url 'focus_category_manage' %}" class="btn btn-outline-dark ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Focus Categories</a>
+          <a href="{% url 'focus_category_manage' %}" class="btn btn-warning text-dark action-btn action-btn-uniform ms-auto"><i class="fa-solid fa-layer-group me-2"></i>Manage Categories</a>
         </div>
       </form>
     </div>
@@ -83,33 +80,27 @@
   <div class="border rounded p-3 mb-3 mit-row">
     {{ formset.empty_form.id }}
     <div class="row g-3 align-items-end">
-      <div class="col-lg-2 col-md-6">
+      <div class="col-lg-4 col-md-6">
         <label class="form-label">Focus Category</label>
         {{ formset.empty_form.skill }}
       </div>
-      <div class="col-lg-3 col-md-6">
-        <label class="form-label">Task</label>
-        {{ formset.empty_form.title }}
-      </div>
-      <div class="col-lg-1 col-md-3 col-6">
-        <label class="form-label">Plan</label>
-        {{ formset.empty_form.planned_minutes }}
-      </div>
-      <div class="col-lg-1 col-md-3 col-6">
-        <label class="form-label">Actual</label>
+      <div class="col-lg-3 col-md-3 col-6">
+        <label class="form-label">Minutes</label>
         {{ formset.empty_form.actual_minutes }}
       </div>
-      <div class="col-lg-2 col-md-4 col-6">
-        <label class="form-label">Status</label>
-        {{ formset.empty_form.status }}
+      <div class="col-lg-3 col-md-3 col-6">
+        <div class="form-check mt-4">
+          {{ formset.empty_form.completed }}
+          <label class="form-check-label" for="{{ formset.empty_form.completed.id_for_label }}">Completed</label>
+        </div>
       </div>
-      <div class="col-lg-2 col-md-8 col-12">
-        <label class="form-label">Miss reason</label>
-        {{ formset.empty_form.miss_reason }}
-      </div>
-      <div class="col-lg-1 col-md-12 col-12">
+      <div class="col-lg-2 col-md-12 col-12">
         <label class="form-label d-block">Remove</label>
-        <div class="form-check">{{ formset.empty_form.DELETE }}</div>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-none delete-checkbox-holder">{{ formset.empty_form.DELETE }}</div>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">Remove</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary restore-row-btn d-none">Undo</button>
+        </div>
       </div>
     </div>
   </div>
@@ -120,28 +111,63 @@
 <script>
   (function () {
     const addBtn = document.getElementById('add-mit-btn');
-    const rows = document.getElementById('mit-rows');
+    const rowsContainer = document.getElementById('mit-rows');
     const totalForms = document.getElementById('id_mits-TOTAL_FORMS');
     const maxForms = parseInt(document.getElementById('id_mits-MAX_NUM_FORMS').value || '8', 10);
     const template = document.getElementById('empty-mit-form-template');
 
-    if (!addBtn || !rows || !totalForms || !template) return;
+    if (!addBtn || !rowsContainer || !totalForms || !template) return;
 
     function updateRowState(row) {
       const skill = row.querySelector('select[name$="-skill"]');
-      const title = row.querySelector('input[name$="-title"]');
-      const planned = row.querySelector('input[name$="-planned_minutes"]');
-      const actual = row.querySelector('input[name$="-actual_minutes"]');
+      const minutes = row.querySelector('input[name$="-actual_minutes"]');
+      const completed = row.querySelector('input[name$="-completed"]');
       const removed = row.querySelector('input[name$="-DELETE"]');
 
       const isFilled = (
         (skill && skill.value) ||
-        (title && title.value.trim().length > 0) ||
-        (planned && planned.value) ||
-        (actual && actual.value)
+        (minutes && minutes.value) ||
+        (completed && completed.checked)
       ) && !(removed && removed.checked);
 
       row.classList.toggle('mit-row-active', !!isFilled);
+      return isFilled;
+    }
+
+    function isRowBlank(row) {
+      const skill = row.querySelector('select[name$="-skill"]');
+      const minutes = row.querySelector('input[name$="-actual_minutes"]');
+      const completed = row.querySelector('input[name$="-completed"]');
+      const removed = row.querySelector('input[name$="-DELETE"]');
+      const hasValues = (skill && skill.value) || (minutes && minutes.value) || (completed && completed.checked);
+      const deleted = removed && removed.checked;
+      return !hasValues && !deleted;
+    }
+
+    function attachRowRemoval(row) {
+      const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+      const removeBtn = row.querySelector('.remove-row-btn');
+      const restoreBtn = row.querySelector('.restore-row-btn');
+      if (!deleteCheckbox || !removeBtn || !restoreBtn) return;
+
+      function syncRemovalState() {
+        const removed = deleteCheckbox.checked;
+        row.classList.toggle('mit-row-removed', removed);
+        removeBtn.classList.toggle('d-none', removed);
+        restoreBtn.classList.toggle('d-none', !removed);
+      }
+
+      removeBtn.addEventListener('click', () => {
+        deleteCheckbox.checked = true;
+        syncRemovalState();
+      });
+
+      restoreBtn.addEventListener('click', () => {
+        deleteCheckbox.checked = false;
+        syncRemovalState();
+      });
+
+      syncRemovalState();
     }
 
     function bindRow(row) {
@@ -150,9 +176,28 @@
         el.addEventListener('change', () => updateRowState(row));
       });
       updateRowState(row);
+      attachRowRemoval(row);
     }
 
-    rows.querySelectorAll('.mit-row').forEach(bindRow);
+    function refreshTotalForms() {
+      totalForms.value = rowsContainer.querySelectorAll('.mit-row').length.toString();
+    }
+
+    function pruneBlankRows() {
+      const rows = Array.from(rowsContainer.querySelectorAll('.mit-row'));
+      const blankRows = rows.filter(isRowBlank);
+      const hasFilled = rows.some(row => !isRowBlank(row));
+
+      if (hasFilled) {
+        blankRows.forEach(row => row.remove());
+      } else if (blankRows.length > 1) {
+        blankRows.slice(1).forEach(row => row.remove());
+      }
+      refreshTotalForms();
+    }
+
+    rowsContainer.querySelectorAll('.mit-row').forEach(bindRow);
+    pruneBlankRows();
 
     addBtn.addEventListener('click', function () {
       let formCount = parseInt(totalForms.value, 10);
@@ -162,11 +207,26 @@
       }
 
       let html = template.innerHTML.replaceAll('__prefix__', formCount.toString());
-      rows.insertAdjacentHTML('beforeend', html);
-      const newRow = rows.lastElementChild;
+      rowsContainer.insertAdjacentHTML('beforeend', html);
+      const newRow = rowsContainer.lastElementChild;
       if (newRow) bindRow(newRow);
       totalForms.value = (formCount + 1).toString();
     });
   })();
 </script>
+<style>
+  .mit-row-removed {
+    opacity: 0.45;
+    position: relative;
+  }
+  .mit-row-removed::after {
+    content: 'Removed';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #dc3545;
+  }
+</style>
 {% endblock %}

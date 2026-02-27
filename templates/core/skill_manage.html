@@ -14,7 +14,7 @@
 
           <div class="mb-3"><label class="form-label">Name</label>{{ form.name }}</div>
           <div class="mb-3"><label class="form-label">Description</label>{{ form.description }}</div>
-          <div class="mb-3"><label class="form-label">Monthly Goal Minutes</label>{{ form.goal_minutes }}</div>
+          <div class="mb-3"><label class="form-label">Weekly Goal Minutes</label>{{ form.weekly_goal_minutes }}</div>
           <div class="form-check mb-3">{{ form.is_active }} <label class="form-check-label">Active</label></div>
 
           <div class="d-flex gap-2 flex-wrap">
@@ -50,7 +50,7 @@
                   <div>
                     <strong>{{ category.name }}</strong>
                     {% if category.description %}<div class="text-muted small">{{ category.description }}</div>{% endif %}
-                    <div class="small text-muted">Goal: {{ category.goal_minutes }} min/month</div>
+                    <div class="small text-muted">Goal: {{ category.weekly_goal_minutes }} min/week</div>
                   </div>
                   <div class="d-flex gap-2 align-items-center">
                     <span class="badge {% if category.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">{% if category.is_active %}Active{% else %}Inactive{% endif %}</span>
