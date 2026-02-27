@@ -93,6 +93,29 @@
     </div>
   </div>
 
+  <div class="card shadow-sm mb-4 dashboard-surface">
+    <div class="card-body">
+      <h5 class="card-title"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Sessions still open (this week)</h5>
+      {% if incomplete_sessions %}
+        <ul class="list-unstyled mb-0">
+          {% for session in incomplete_sessions %}
+            <li class="mb-2">
+              <div class="d-flex justify-content-between small">
+                <span>
+                  <strong>{{ session.daily_checkin.date }}</strong>
+                  &middot; {{ session.skill.name|default:'(No category)' }}
+                </span>
+                <span>{{ session.planned_minutes }} min</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-muted">Everything logged this week is completed. 🎯</div>
+      {% endif %}
+    </div>
+  </div>
+
   <div class="row g-3 mb-4">
     <div class="col-lg-8">
       <div class="card shadow-sm h-100 dashboard-surface"><div class="card-body"><h5 class="card-title"><i class="fa-solid fa-chart-line me-2 text-primary"></i>Daily time trend (this week)</h5><canvas id="trendChart" height="110"></canvas></div></div>
@@ -114,11 +137,12 @@
   </div>
 
   <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent Focus Sessions</h3></div>
-  <div class="card shadow-sm dashboard-surface"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Minutes</th></tr></thead><tbody>
+  <div class="card shadow-sm dashboard-surface"><div class="table-responsive"><table class="table table-striped mb-0"><thead><tr><th>Date</th><th>Focus Category</th><th>Description</th><th>Minutes</th></tr></thead><tbody>
   {% for mit in recent_mits %}
     <tr>
       <td><a href="{% url 'checkin_detail' mit.daily_checkin.pk %}">{{ mit.daily_checkin.date }}</a></td>
       <td>{{ mit.skill.name|default:'(No category)' }}</td>
+      <td>{{ mit.skill.description|default:'—' }}</td>
       <td>{{ mit.actual_minutes|default:0 }}m</td>
     </tr>
   {% empty %}

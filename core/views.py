@@ -37,11 +37,12 @@ def _current_streak(user):
 
 
 def _monthly_narrative(month_sessions, completion_rate):
-    if not month_sessions.exists():
+    completed_sessions = month_sessions.filter(status=MITSession.Status.COMPLETED)
+    if not completed_sessions.exists():
         return "No Focused sessions logged this month yet. Start with one focused check-in today."
 
     skill_minutes = (
-        month_sessions.values("skill__name")
+        completed_sessions.values("skill__name")
         .annotate(actual=Sum("actual_minutes"))
         .order_by("-actual")
     )
@@ -109,7 +110,7 @@ def home(request):
     summary = week_sessions.aggregate(
         total=Count("id"),
         completed=Count("id", filter=Q(status=MITSession.Status.COMPLETED)),
-        actual_minutes=Sum("actual_minutes"),
+        actual_minutes=Sum("actual_minutes", filter=Q(status=MITSession.Status.COMPLETED)),
     )
 
     total = summary["total"] or 0
@@ -119,7 +120,7 @@ def home(request):
 
     recent_mits = (
         MITSession.objects.select_related("daily_checkin", "skill")
-        .filter(daily_checkin__owner=request.user)
+        .filter(daily_checkin__owner=request.user, status=MITSession.Status.COMPLETED)
         .order_by("-daily_checkin__date", "skill__name")[:9]
     )
 
@@ -136,7 +137,7 @@ def home(request):
         trend_actual.append(daily_map.get(day, 0))
 
     monthly_trend_qs = (
-        MITSession.objects.filter(daily_checkin__owner=request.user)
+        MITSession.objects.filter(daily_checkin__owner=request.user, status=MITSession.Status.COMPLETED)
         .annotate(month=TruncMonth("daily_checkin__date"))
         .values("month")
         .annotate(actual=Sum("actual_minutes"))
@@ -145,17 +146,27 @@ def home(request):
     month_labels = [r["month"].strftime("%b %Y") for r in monthly_trend_qs]
     month_actual = [r["actual"] or 0 for r in monthly_trend_qs]
 
-    skill_qs = week_sessions.values("skill__name").annotate(count=Count("id")).order_by("-count")
+    skill_qs = week_sessions.filter(status=MITSession.Status.COMPLETED).values("skill__name").annotate(count=Count("id")).order_by("-count")
     category_labels = [r["skill__name"] or "(No category)" for r in skill_qs]
     category_data = [r["count"] for r in skill_qs]
 
     goals = Skill.objects.filter(owner=request.user, is_active=True).order_by("name")
     goal_progress = []
     for g in goals:
-        actual = week_sessions.filter(skill=g).aggregate(v=Sum("actual_minutes"))["v"] or 0
+        actual = (
+            week_sessions.filter(skill=g, status=MITSession.Status.COMPLETED)
+            .aggregate(v=Sum("actual_minutes"))["v"]
+            or 0
+        )
         target = g.weekly_goal_minutes or 0
         pct = round((actual / target) * 100, 1) if target else 0
         goal_progress.append({"name": g.name, "goal": target, "actual": actual, "pct": pct})
+
+    incomplete_sessions = (
+        week_sessions.exclude(status=MITSession.Status.COMPLETED)
+        .select_related("skill", "daily_checkin")
+        .order_by("-daily_checkin__date")
+    )
 
     context = {
         "app_name": "Focused Time Tracker",
@@ -173,6 +184,7 @@ def home(request):
         "monthly_narrative": _monthly_narrative(month_sessions, monthly_completion_rate),
         "goal_progress": goal_progress,
         "week_range_label": f"{week_start:%b %d} – {week_end:%b %d}",
+        "incomplete_sessions": incomplete_sessions,
     }
     return render(request, "core/home.html", context)
 

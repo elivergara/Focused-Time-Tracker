@@ -76,9 +76,13 @@ class MITSessionForm(forms.ModelForm):
         instance = super().save(commit=False)
         minutes = self.cleaned_data.get("actual_minutes") or 0
         completed = self.cleaned_data.get("completed")
-        instance.actual_minutes = minutes
         instance.planned_minutes = minutes
-        instance.status = MITSession.Status.COMPLETED if completed else MITSession.Status.PLANNED
+        if completed:
+            instance.actual_minutes = minutes
+            instance.status = MITSession.Status.COMPLETED
+        else:
+            instance.actual_minutes = None
+            instance.status = MITSession.Status.PLANNED
         if not instance.title:
             skill = self.cleaned_data.get("skill") or instance.skill
             instance.title = skill.name if skill else "Focus Session"

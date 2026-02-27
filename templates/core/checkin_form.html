@@ -110,6 +110,15 @@
 {% block extra_js %}
 <script>
   (function () {
+    const dateInput = document.querySelector('input[name="date"]');
+    if (dateInput) {
+      dateInput.addEventListener('change', function () {
+        if (!this.value) return;
+        const targetUrl = `${window.location.pathname}?date=${this.value}`;
+        window.location.href = targetUrl;
+      });
+    }
+
     const addBtn = document.getElementById('add-mit-btn');
     const rowsContainer = document.getElementById('mit-rows');
     const totalForms = document.getElementById('id_mits-TOTAL_FORMS');
